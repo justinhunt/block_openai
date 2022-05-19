@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="block_openai_file" COMMENT="poodllnet kanri plan">
+    <TABLE NAME="block_openai_file" COMMENT="training file upload">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" />
         <FIELD NAME="openaiid" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="key " />
@@ -19,10 +19,11 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_openai_finetune" COMMENT="poodllnet kanri tenant">
+    <TABLE NAME="block_openai_finetune" COMMENT="finetune request and response">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" />
         <FIELD NAME="openaiid" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="key " />
+        <FIELD NAME="ftmodel" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="key " />
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="name" />
         <FIELD NAME="model" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="model" />
         <FIELD NAME="purpose" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="purpose" />

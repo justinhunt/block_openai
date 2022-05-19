@@ -36,37 +36,29 @@ require_once($CFG->dirroot.'/lib/formslib.php');
 
 
 
-class thefinetuneform extends \moodleform {
+class theinferenceform extends \moodleform {
 
     public function definition() {
         $mform = $this->_form;
 
-        $mform->addElement('header', 'typeheading', "Create Fine Tune");
+        $mform->addElement('header', 'typeheading', "Create Inference");
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('hidden', 'type','finetune');
+
+        $mform->addElement('hidden', 'type','inference');
         $mform->setType('type', PARAM_TEXT);
 
-        $mform->addElement('text', 'name', 'Name', array('size'=>10));
-        $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', get_string('required'), 'required', null, 'client');
+        $statusready = true;
+        $options  = common::fetch_finetunes_list( $statusready);
+        $mform->addElement('select', 'finetune', 'The Finetune', $options);
 
-        $options  = common::fetch_trainingfiles_list();
-        $mform->addElement('select', 'file', 'The File', $options);
-
-        $options  = common::fetch_models_list();
-        $mform->addElement('select', 'model', 'The Model', $options);
-        $mform->setDefault('model', 'curie');
-
-        $mform->addElement('text', 'description', 'Description', array('size'=>10));
-        $mform->setType('description', PARAM_TEXT);
+        $mform->addElement('text', 'prompt', 'Prompt', array('size'=>70));
+        $mform->setType('prompt', PARAM_TEXT);
        // $mform->addRule('description', get_string('required'), 'required', null, 'client');
 
-        $mform->addElement('text', 'jsonopts', 'JSON opts', array('size'=>10));
+        $mform->addElement('text', 'jsonopts', 'JSON opts', array('size'=>70));
         $mform->setType('jsonopts', PARAM_TEXT);
-        $mform->setDefault('jsonopts', '{}');
+        $mform->setDefault('jsonopts', '{"max_tokens": 412, "temperature": 0.5, "top_p": 1, "n": 1}');
 
 
         //add the action buttons

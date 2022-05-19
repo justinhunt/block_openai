@@ -10,6 +10,7 @@ namespace block_openai\output;
 
 use \block_openai\constants;
 use \block_openai\common;
+use \block_openai\openai;
 
 
 class renderer extends \plugin_renderer_base {
@@ -35,6 +36,7 @@ class renderer extends \plugin_renderer_base {
 //determine which options we show to users
 
         $items[]= constants::SETTING_FINETUNES;
+        $items[]= constants::SETTING_INFERENCE;
 
 
 
@@ -133,13 +135,34 @@ class renderer extends \plugin_renderer_base {
             $addnewbutton ='';
         }
 
+        $openai_finetunes = false;
         $data = array();
         foreach($finetunes as $finetune) {
+
+            $status = $finetune->status;
+            if($status==0) {
+                if($openai_finetunes==false){$openai_finetunes = openai::list_finetunes();}
+                if ($openai_finetunes && isset($openai_finetunes->data) && count($openai_finetunes->data) > 0) {
+                    foreach ($openai_finetunes->data as $ft) {
+                        if ($ft->id == $finetune->openaiid) {
+                            if(!is_null($ft->fine_tuned_model)){
+                                $finetune->ftmodel = $ft->fine_tuned_model;
+                                $finetune->status=1;
+                                $DB->update_record(constants::M_TABLE_FINETUNES,$finetune);
+                            }
+                            $status = $finetune->status;
+                            break;
+                        }
+                    }
+                }
+            }
+
             $fields = array();
             $fields[] = $finetune->id;
             $fields[] =  $finetune->name;
             $fields[] =  $finetune->openaiid;
             $fields[] = $trainingfiles[$finetune->file];
+            $fields[] = $status ==0 ? 'PENDING' : 'Ready';
             $fields[] = strftime('%d %b %Y', $finetune->timecreated);
 
             $buttons = array();
@@ -160,6 +183,7 @@ class renderer extends \plugin_renderer_base {
             get_string('name', constants::M_COMP),
             'openaiid',
             'Training File',
+            'Status',
             get_string('created', constants::M_COMP),
             get_string('action'));
         $table->colclasses = array('leftalign name', 'leftalign size','centeralign action');

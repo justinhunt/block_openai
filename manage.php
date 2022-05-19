@@ -148,7 +148,7 @@ if ($editform->is_cancelled()){
                     $payload = $ret;
                 }
                 if(!$success){
-                    $payload = "it seemed to FAIL";
+                    $payload = "it seemed to FAIL: " . $ret->error->message;
                     redirect($returnurl,$payload,3,\core\output\notification::NOTIFY_WARNING);
                 }
 
@@ -174,7 +174,7 @@ if ($editform->is_cancelled()){
                     $payload = $ret;
                 }
                 if(!$success){
-                    $payload = "it seemed to FAIL";
+                    $payload = "it seemed to FAIL:"  . $ret->error->message;
                     redirect($returnurl,$payload,3,\core\output\notification::NOTIFY_WARNING);
                 }
 

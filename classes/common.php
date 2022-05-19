@@ -72,6 +72,11 @@ class common
                 return new \moodle_url(constants::M_URL . '/finetune.php',
                     array('courseid'=>$courseid));
 
+            case constants::SETTING_INFERENCE:
+
+                return new \moodle_url(constants::M_URL . '/inference.php',
+                    array('courseid'=>$courseid));
+
             case constants::SETTING_NONE:
             default:
         }
@@ -83,6 +88,10 @@ class common
 
             case constants::SETTING_FINETUNES:
                 return 'Fine Tunes';
+
+            case constants::SETTING_INFERENCE:
+                return 'Inference';
+
             case constants::SETTING_NONE:
             default:
         }
@@ -123,6 +132,24 @@ class common
         return $ret;
     }
 
+    public static function fetch_finetunes_list($statusready=false){
+        global $DB;
+        $params = array();
+        if($statusready){
+            $params->status=1;
+        }
+        $finetunes = $DB->get_records(constants::M_TABLE_FINETUNES,array());
+        $ret = [];
+        foreach($finetunes as $finetune){
+            if($finetune->status==0){
+                $ret[$finetune->id]=$finetune->name . " ($finetune->openaiid)";
+            }else{
+                $ret[$finetune->id]=$finetune->name . " ($finetune->ftmodel)";
+            }
+        }
+        return $ret;
+    }
+
 
 
     //register an adhoc task to generate DB
@@ -140,6 +167,18 @@ class common
             \core\task\manager::queue_adhoc_task($task);
         }
         return true;
+    }
+
+    //see if this is truly json or some error
+    public static function is_json($string) {
+        if (!$string) {
+            return false;
+        }
+        if (empty($string)) {
+            return false;
+        }
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
     }
 
 

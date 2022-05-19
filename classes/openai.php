@@ -109,6 +109,26 @@ class openai {
         return $response;
     }
 
+    public static function custom_request($options){
+
+        $default = [
+            "max_tokens" => 16,
+            "temperature" => 1,
+            "top_p" => 1,
+            "presence_penalty" => 0.75,
+            "frequency_penalty"=> 0.75,
+            "best_of"=> 1,
+            "stream" => false,
+        ];
+        $postdata = array_merge($default,$options);
+
+        // Send the request & save response to $resp
+        $requrl =  self::OPENAISYS . "/completions";
+
+        $response = self::curl_fetch($requrl,$postdata, 'post');
+        return $response;
+
+    }
 
     public static  function request($engine, $prompt, $max_tokens){
 
@@ -225,7 +245,7 @@ class openai {
                 return $resultobj;
             }
         }
-        return false;
+        return $result;
     }
 
     //see if this is truly json or some error

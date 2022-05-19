@@ -21,6 +21,7 @@ const M_HOOKCOUNT =5;
 
 const SETTING_NONE ='none';
 const SETTING_FINETUNES ='finetune';
+const SETTING_INFERENCE ='inference';
 const SETTING_RUN ='run';
 
 
