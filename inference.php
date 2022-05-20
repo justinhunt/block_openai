@@ -90,4 +90,6 @@ if($ok) {
     echo  get_string('nopermission', constants::M_COMP);
 }
 
+echo $renderer->quicklink( constants::SETTING_FINETUNES, $courseid);
+
 echo $renderer->footer();

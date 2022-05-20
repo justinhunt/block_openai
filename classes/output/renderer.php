@@ -254,5 +254,13 @@ class renderer extends \plugin_renderer_base {
 
     }
 
+    public function quicklink($type, $courseid){
+
+        $link =common::fetch_settings_url($type,$courseid);
+        $displayname =common::fetch_settings_title($type);
+
+        $setting=['url'=>$link->out(false),'displayname'=>$displayname];
+        return $this->render_from_template('block_openai/quicklink', $setting);
+    }
 
 }
