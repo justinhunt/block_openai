@@ -93,6 +93,18 @@ class openai {
 
     }
 
+    public static  function delete_trainingfile($trainingfile){
+        $requrl =  self::OPENAISYS .  "/file/" . $trainingfile;
+        $response = self::curl_delete($requrl);
+        return $response;
+    }
+
+    public static  function delete_finetune($model){
+        $requrl =  self::OPENAISYS .  "/models/" . $model;
+        $response = self::curl_delete($requrl);
+        return $response;
+    }
+
     public static  function list_finetunes(){
         $requrl =  self::OPENAISYS .  "/fine-tunes";
         $response = self::curl_fetch($requrl,null, 'get');
@@ -215,6 +227,30 @@ class openai {
             }
 
     }
+
+    //we use curl to fetch details from openai
+    public static function curl_delete($url)
+    {
+        global $CFG;
+        $config = get_config(constants::M_COMP);
+        if(isset($config->openaiapikey) && $config->openaiapikey) {
+            $secret = $config->openaiapikey;
+        }else{
+            $secret = 'nosecret';
+        }
+
+        require_once($CFG->libdir.'/filelib.php');
+        $curl = new \curl();
+        $curl->setHeader('Authorization: Bearer ' . $secret);
+        $result = $curl->delete($url);
+
+        if(self::is_json($result)){
+            $resultobj = json_decode($result);
+            return $resultobj;
+        }
+        return $result;
+    }
+
     //we use curl to fetch details from openai
     public static function curl_fetch($url,$postdata=false, $method='get')
     {
@@ -230,6 +266,7 @@ class openai {
         $curl = new \curl();
         $curl->setHeader('Authorization: Bearer ' . $secret);
         $curl->setHeader(array('Content-type: application/json'));
+
 
         if($method=='post') {
             $result = $curl->post($url, json_encode($postdata));

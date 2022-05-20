@@ -224,7 +224,7 @@ class renderer extends \plugin_renderer_base {
             $fields[] = strftime('%d %b %Y', $trainingfile->timecreated);
 
             $buttons = array();
-            $urlparams = array('id' => $trainingfile->id,'type'=>'finetune','returnurl' => $baseurl->out_as_local_url());
+            $urlparams = array('id' => $trainingfile->id,'type'=>'trainingfile','returnurl' => $baseurl->out_as_local_url());
             $buttons[] = \html_writer::link(new \moodle_url(constants::M_URL . '/manage.php',
                 $urlparams + array('delete' => 1)),
                 $this->output->pix_icon('t/delete', get_string('delete')),

@@ -73,7 +73,11 @@ if ($delete && $id) {
 
         case 'finetune':
             if ($confirm and confirm_sesskey()) {
-                //do delete
+                $finetune = $DB->get_record(constants::M_TABLE_FINETUNES,array('id'=>$id));
+                if($finetune && $finetune->status==1) {
+                    openai::delete_finetune($finetune->ftmodel);
+                    $DB->delete_records(constants::M_TABLE_FINETUNES,array('id'=>$id));
+                }
                 redirect($returnurl);
             }
             $strheading = "Deleting Fine Tune";
@@ -92,7 +96,8 @@ if ($delete && $id) {
             if ($confirm and confirm_sesskey()) {
                 $trainingfile = $DB->get_record(constants::M_TABLE_FILES,array('id'=>$id));
                 if($trainingfile) {
-                    //do delete
+                    openai::delete_trainingfile($trainingfile->openaiid);
+                    $DB->delete_records(constants::M_TABLE_FILES,array('id'=>$id));
                 }
                 redirect($returnurl);
             }
