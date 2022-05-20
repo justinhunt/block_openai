@@ -136,9 +136,9 @@ class common
         global $DB;
         $params = array();
         if($statusready){
-            $params->status=1;
+            $params['status']=1;
         }
-        $finetunes = $DB->get_records(constants::M_TABLE_FINETUNES,array());
+        $finetunes = $DB->get_records(constants::M_TABLE_FINETUNES,$params);
         $ret = [];
         foreach($finetunes as $finetune){
             if($finetune->status==0){
