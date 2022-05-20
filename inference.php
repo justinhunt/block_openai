@@ -71,6 +71,8 @@ if($ok) {
             $options = $options + json_decode($data->jsonopts, true);
         }
         $response = openai::custom_request($options);
+    }else{
+        $inferenceform->set_data(['courseid'=>$courseid]);
     }
 
     $inferenceform->display();

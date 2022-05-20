@@ -48,6 +48,9 @@ class theinferenceform extends \moodleform {
         $mform->addElement('hidden', 'type','inference');
         $mform->setType('type', PARAM_TEXT);
 
+        $mform->addElement('hidden', 'courseid');
+        $mform->setType('courseid', PARAM_INT);
+
         $statusready = true;
         $options  = common::fetch_finetunes_list( $statusready);
         $mform->addElement('select', 'finetune', 'The Finetune', $options);
