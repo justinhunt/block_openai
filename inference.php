@@ -68,7 +68,7 @@ if($ok) {
         $trainingfile = $DB->get_record(constants::M_TABLE_FILES,array('id'=>$finetune->file));
         $options['prompt']=$data->prompt . $trainingfile->seperator;
         $options['model']=$finetune->ftmodel;
-        $options['stop']=$trainingfile->stop;
+        $options['stop']=$trainingfile->stopsequence;
         if(common::is_json($data->jsonopts)){
             $options = $options + json_decode($data->jsonopts, true);
         }

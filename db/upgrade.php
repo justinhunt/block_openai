@@ -56,7 +56,7 @@ function xmldb_block_openai_upgrade($oldversion) {
         $fields=[];
         //$fields[] = new xmldb_field('billinginterval', XMLDB_TYPE_INTEGER, '4', null, null, null, 0);
         //$fields[] = new xmldb_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
-        $fields[] = new xmldb_field('stepsequence',
+        $fields[] = new xmldb_field('stopsequence',
             XMLDB_TYPE_CHAR, '255', null, null, null, '0');
         $fields[] = new xmldb_field('seperator',
             XMLDB_TYPE_CHAR, '255', null, null, null, '0');
