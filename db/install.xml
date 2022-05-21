@@ -11,6 +11,9 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="name " />
         <FIELD NAME="purpose" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="purpose" />
         <FIELD NAME="description" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="descripion" />
+        <FIELD NAME="stopsequence" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="stop sequence " />
+        <FIELD NAME="seperator" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="seperator " />
+        <FIELD NAME="exampleprompt" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="example prompt" />
         <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="content" />
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"/>

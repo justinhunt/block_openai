@@ -220,6 +220,7 @@ class renderer extends \plugin_renderer_base {
             $fields = array();
             $fields[] = $trainingfile->id;
             $fields[] =  $trainingfile->name;
+            $fields[] = $trainingfile->exampleprompt;
             $fields[] = $trainingfile->openaiid;
             $fields[] = strftime('%d %b %Y', $trainingfile->timecreated);
 
@@ -240,6 +241,7 @@ class renderer extends \plugin_renderer_base {
         $table->head  = array(get_string('id', constants::M_COMP),
             get_string('name', constants::M_COMP),
             "openaiid",
+            "Example Prompt",
             get_string('created', constants::M_COMP),
             get_string('action'));
         $table->colclasses = array('leftalign name', 'leftalign size','centeralign action');

@@ -49,7 +49,7 @@ class thefinetuneform extends \moodleform {
         $mform->addElement('hidden', 'type','finetune');
         $mform->setType('type', PARAM_TEXT);
 
-        $mform->addElement('text', 'name', 'Name', array('size'=>10));
+        $mform->addElement('text', 'name', 'Name', array('size'=>70));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
@@ -60,11 +60,11 @@ class thefinetuneform extends \moodleform {
         $mform->addElement('select', 'model', 'The Model', $options);
         $mform->setDefault('model', 'curie');
 
-        $mform->addElement('text', 'description', 'Description', array('size'=>10));
+        $mform->addElement('text', 'description', 'Description', array('size'=>70));
         $mform->setType('description', PARAM_TEXT);
        // $mform->addRule('description', get_string('required'), 'required', null, 'client');
 
-        $mform->addElement('text', 'jsonopts', 'JSON opts', array('size'=>10));
+        $mform->addElement('text', 'jsonopts', 'JSON opts', array('size'=>50));
         $mform->setType('jsonopts', PARAM_TEXT);
         $mform->setDefault('jsonopts', '{}');
 

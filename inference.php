@@ -64,9 +64,11 @@ if($ok) {
         redirect($returnurl);
     }else if($data = $inferenceform->get_data()) {
         $options = [];
-        $model = $DB->get_record(constants::M_TABLE_FINETUNES,array('id'=>$data->finetune));
-        $options['prompt']=$data->prompt;
-        $options['model']=$model->ftmodel;
+        $finetune = $DB->get_record(constants::M_TABLE_FINETUNES,array('id'=>$data->finetune));
+        $trainingfile = $DB->get_record(constants::M_TABLE_FILES,array('id'=>$finetune->file));
+        $options['prompt']=$data->prompt . $trainingfile->seperator;
+        $options['model']=$finetune->ftmodel;
+        $options['stop']=$trainingfile->stop;
         if(common::is_json($data->jsonopts)){
             $options = $options + json_decode($data->jsonopts, true);
         }

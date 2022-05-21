@@ -49,7 +49,7 @@ class thefileform extends \moodleform {
         $mform->addElement('hidden', 'type','trainingfile');
         $mform->setType('type', PARAM_TEXT);
 
-        $mform->addElement('text', 'name', 'Name', array('size'=>10));
+        $mform->addElement('text', 'name', 'Name', array('size'=>70));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
@@ -59,7 +59,22 @@ class thefileform extends \moodleform {
         $mform->setDefault('purpose', 'fine-tune');
         $mform->addRule('purpose', get_string('required'), 'required', null, 'client');
 
-        $mform->addElement('text', 'description', 'Description', array('size'=>10));
+        $mform->addElement('text', 'stopsequence', 'Stop Sequence', array('size'=>40));
+        $mform->setType('stopsequence', PARAM_TEXT);
+        $mform->setDefault('stopsequence', '###');
+        $mform->addRule('stopsequence', get_string('required'), 'required', null, 'client');
+
+        $mform->addElement('text', 'seperator', 'Seperator', array('size'=>40));
+        $mform->setType('seperator', PARAM_TEXT);
+        $mform->setDefault('seperator', '@#@#');
+        $mform->addRule('seperator', get_string('required'), 'required', null, 'client');
+
+        $mform->addElement('text', 'exampleprompt', 'Example Prompt', array('size'=>70));
+        $mform->setType('exampleprompt', PARAM_TEXT);
+        $mform->setDefault('exampleprompt', 'Topic: Dodo Birds ');
+        $mform->addRule('exampleprompt', get_string('required'), 'required', null, 'client');
+
+        $mform->addElement('text', 'description', 'Description', array('size'=>70));
         $mform->setType('description', PARAM_TEXT);
         // $mform->addRule('description', get_string('required'), 'required', null, 'client');
 
