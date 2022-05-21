@@ -220,8 +220,8 @@ class renderer extends \plugin_renderer_base {
             $fields = array();
             $fields[] = $trainingfile->id;
             $fields[] =  $trainingfile->name;
-            $fields[] = $trainingfile->exampleprompt;
             $fields[] = $trainingfile->openaiid;
+            $fields[] = $trainingfile->exampleprompt;
             $fields[] = strftime('%d %b %Y', $trainingfile->timecreated);
 
             $buttons = array();
