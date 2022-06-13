@@ -64,7 +64,7 @@ class theinferenceform extends \moodleform {
 
         $mform->addElement('text', 'jsonopts', 'JSON opts', array('size'=>70));
         $mform->setType('jsonopts', PARAM_TEXT);
-        $mform->setDefault('jsonopts', '{"max_tokens": 412, "temperature": 0.2, "top_p": 1, "n": 1}');
+        $mform->setDefault('jsonopts', '{"max_tokens": 600, "temperature": 0, "top_p": 1, "n": 1}');
 
         //add the action buttons
         $this->add_action_buttons(get_string('cancel'), get_string('save', constants::M_COMP));
