@@ -116,7 +116,7 @@ class renderer extends \plugin_renderer_base {
     //return a button that will allow user to add a new sub
     function fetch_addinference_button($courseid=0){
         $url =common::fetch_settings_url(constants::SETTING_INFERENCE,$courseid);
-        $displayname =common::fetch_settings_title(constants::SETTING_INFERENCE);
+        $displayname ="Create Inference";
 
 
         $thebutton = new \single_button(
@@ -290,8 +290,8 @@ class renderer extends \plugin_renderer_base {
         foreach($inferences as $inference) {
             $fields = array();
             $fields[] = $inference->id;
-            $fields[] = $finetunes[$inference->finetuneid]->name;
-            $fields[] = $trainingfiles[$inference->fileid]->name;
+            $fields[] = $finetunes[$inference->finetuneid];
+            $fields[] = $trainingfiles[$inference->fileid];
             $fields[] =  $inference->prompt;
             $fields[] = strftime('%d %b %Y', $inference->timemodified);
             $fields[] = strftime('%d %b %Y', $inference->timecreated);
@@ -302,6 +302,11 @@ class renderer extends \plugin_renderer_base {
                 $urlparams + array('delete' => 1)),
                 $this->output->pix_icon('t/delete', get_string('delete')),
                 array('title' => get_string('delete')));
+
+            $buttons[] = \html_writer::link(new \moodle_url(constants::M_URL . '/inference.php',
+                $urlparams + array('view' => 1)),
+                $this->output->pix_icon('i/preview', get_string('preview')),
+                array('title' => get_string('view')));
 
 
             $fields[] = implode(' ', $buttons);

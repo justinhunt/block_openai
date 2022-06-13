@@ -60,12 +60,11 @@ class theinferenceform extends \moodleform {
 
         $mform->addElement('text', 'prompt', 'Prompt', array('size'=>70));
         $mform->setType('prompt', PARAM_TEXT);
-       // $mform->addRule('description', get_string('required'), 'required', null, 'client');
+        $mform->setDefault('prompt', 'non fiction reading passage: blah blah blah');
 
         $mform->addElement('text', 'jsonopts', 'JSON opts', array('size'=>70));
         $mform->setType('jsonopts', PARAM_TEXT);
-        $mform->setDefault('jsonopts', '{"max_tokens": 412, "temperature": 0.1, "top_p": 1, "n": 1}');
-
+        $mform->setDefault('jsonopts', '{"max_tokens": 412, "temperature": 0.2, "top_p": 1, "n": 1}');
 
         //add the action buttons
         $this->add_action_buttons(get_string('cancel'), get_string('save', constants::M_COMP));
