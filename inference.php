@@ -64,7 +64,7 @@ if($ok) {
         redirect($returnurl);
     }else if($data = $inferenceform->get_data()) {
         $options = [];
-        $finetune = $DB->get_record(constants::M_TABLE_FINETUNES,array('id'=>$data->finetune));
+        $finetune = $DB->get_record(constants::M_TABLE_FINETUNES,array('id'=>$data->finetuneid));
         $trainingfile = $DB->get_record(constants::M_TABLE_FILES,array('id'=>$finetune->file));
         $options['prompt']=$data->prompt . $trainingfile->seperator;
         $options['model']=$finetune->ftmodel;
@@ -73,6 +73,24 @@ if($ok) {
             $options = $options + json_decode($data->jsonopts, true);
         }
         $response = openai::custom_request($options);
+
+        //save a copy of this inference
+        if(!empty($response)) {
+            if (isset($response->error)) {
+                echo $response->error->message;
+            } else {
+                $rec=new \stdClass();
+                $rec->prompt=$data->prompt;
+                $rec->completion=$response;
+                $rec->finetuneid=$finetune->id;
+                $rec->fileid = $trainingfile->id;
+                $rec->jsonopts = $data->jsonopts;
+                $rec->timecreated = time();
+                $rec->timemodified = time();
+                $rec->id = $DB->insert_record(constants::M_TABLE_INFERENCES,$rec);
+            }
+        }
+
     }else{
         $inferenceform->set_data(['courseid'=>$courseid]);
     }

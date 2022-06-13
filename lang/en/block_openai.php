@@ -163,6 +163,7 @@ $string['chargebeesiteprefix'] = 'Chargebee Site Prefix';
 $string['chargebeesiteprefix_desc'] = 'The part before chargebee,com, e.g poodll-test';
 $string['chargebeesync_task'] = 'Chargebee Sync';
 $string['subdomain']='Sub domain';
+$string['modified']='modified';
 $string['fulldomain']='Full domain';
 
 

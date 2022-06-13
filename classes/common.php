@@ -113,6 +113,11 @@ class common
         return $trainingfiles;
     }
 
+    public static function fetch_inferences(){
+        global $DB;
+        $inferences= $DB->get_records(constants::M_TABLE_INFERENCES,array());
+        return $inferences;
+    }
 
     public static function fetch_purposes_list(){
         return array('search'=>'search','answers'=>'answers','classifications'=>'classifications','fine-tune'=>'fine-tune');

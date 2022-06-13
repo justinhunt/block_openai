@@ -52,6 +52,7 @@ $ok = has_capability('block/openai:managesite', $context);
 
 $finetunes=common::fetch_finetunes();
 $trainingfiles=common::fetch_trainingfiles();
+$inferences = common::fetch_inferences();
 
 //get our renderer
 $renderer = $PAGE->get_renderer(constants::M_COMP);
@@ -78,6 +79,16 @@ if($ok) {
     $dbv_props = new \stdClass();
     $dbv_opts = Array();
     $dbv_opts['tableid'] = constants::M_ID_TRAININGFILES_HTMLTABLE;
+    $dbv_opts['tableprops'] = $dbv_props;
+    $PAGE->requires->js_call_amd(constants::M_COMP . "/datatables", 'init', array($dbv_opts));
+
+    //inferences
+    $inferencestable = $renderer->fetch_inferences_table($inferences,$courseid);
+    echo $inferencestable;
+    //set up datatables
+    $dbv_props = new \stdClass();
+    $dbv_opts = Array();
+    $dbv_opts['tableid'] = constants::M_ID_INFERENCES_HTMLTABLE;
     $dbv_opts['tableprops'] = $dbv_props;
     $PAGE->requires->js_call_amd(constants::M_COMP . "/datatables", 'init', array($dbv_opts));
 

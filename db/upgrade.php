@@ -73,6 +73,32 @@ function xmldb_block_openai_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020091500, 'block',constants::M_NAME);
 
     }
+    if ($oldversion < 2022061201) {
+        $table = new xmldb_table(constants::M_TABLE_INFERENCES);
+
+        // Adding fields to table tool_dataprivacy_contextlist.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('finetuneid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('fileid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('prompt', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('completion', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $fields[] = new xmldb_field('jsonopts',
+            XMLDB_TYPE_CHAR, '255', null, null, null, '{}');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+
+        // Adding keys to table
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // savepoint reached.
+        upgrade_plugin_savepoint(true, 2022061201, 'block',constants::M_NAME);
+    }
+
 
 
 

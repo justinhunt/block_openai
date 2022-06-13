@@ -38,9 +38,6 @@ class renderer extends \plugin_renderer_base {
         $items[]= constants::SETTING_FINETUNES;
         $items[]= constants::SETTING_INFERENCE;
 
-
-
-
         $settings = [];
         foreach ($items as $item){
             $link =common::fetch_settings_url($item,$courseid);
@@ -113,6 +110,18 @@ class renderer extends \plugin_renderer_base {
         $thebutton = new \single_button(
             new \moodle_url(constants::M_URL . '/manage.php',array('type'=>'trainingfile')),
             "Create Training File", 'get');
+        return $thebutton;
+    }
+
+    //return a button that will allow user to add a new sub
+    function fetch_addinference_button($courseid=0){
+        $url =common::fetch_settings_url(constants::SETTING_INFERENCE,$courseid);
+        $displayname =common::fetch_settings_title(constants::SETTING_INFERENCE);
+
+
+        $thebutton = new \single_button(
+            new \moodle_url($url),
+            $displayname, 'get');
         return $thebutton;
     }
 
@@ -198,7 +207,7 @@ class renderer extends \plugin_renderer_base {
 
     }
 
-    //Fetch assigned tenants table
+    //Fetch training files table
     function fetch_trainingfiles_table($trainingfiles,$courseid){
         global $DB;
 
@@ -255,6 +264,71 @@ class renderer extends \plugin_renderer_base {
         return   $heading  . $addnewbutton .  \html_writer::table($table);
 
     }
+
+
+    //Fetch inferences table
+    function fetch_inferences_table($inferences,$courseid){
+        global $DB;
+
+        $trainingfiles = common::fetch_trainingfiles_list();
+        $finetunes = common::fetch_finetunes_list();
+
+        $params=['courseid'=>$courseid];
+        $baseurl = new \moodle_url(constants::M_URL . '/finetune.php', $params);
+
+
+        //add sub button
+        $context = \context_system::instance();
+        if(has_capability('block/' . constants::M_NAME. ':managesite', $context)) {
+            $abutton = $this->fetch_addinference_button($courseid); //TO DO
+            $addnewbutton = $this->render($abutton);
+        }else{
+            $addnewbutton ='';
+        }
+
+        $data = array();
+        foreach($inferences as $inference) {
+            $fields = array();
+            $fields[] = $inference->id;
+            $fields[] = $finetunes[$inference->finetuneid]->name;
+            $fields[] = $trainingfiles[$inference->fileid]->name;
+            $fields[] =  $inference->prompt;
+            $fields[] = strftime('%d %b %Y', $inference->timemodified);
+            $fields[] = strftime('%d %b %Y', $inference->timecreated);
+
+            $buttons = array();
+            $urlparams = array('id' => $inference->id,'type'=>'inference','returnurl' => $baseurl->out_as_local_url());
+            $buttons[] = \html_writer::link(new \moodle_url(constants::M_URL . '/manage.php',
+                $urlparams + array('delete' => 1)),
+                $this->output->pix_icon('t/delete', get_string('delete')),
+                array('title' => get_string('delete')));
+
+
+            $fields[] = implode(' ', $buttons);
+
+            $data[] = $row = new \html_table_row($fields);
+        }
+
+        $table = new \html_table();
+        $table->head  = array(get_string('id', constants::M_COMP),
+            "FineTune",
+            "File",
+            "Prompt",
+            get_string('modified', constants::M_COMP),
+            get_string('created', constants::M_COMP),
+            get_string('action'));
+        $table->colclasses = array('leftalign name', 'leftalign size','centeralign action');
+
+        $table->id = constants::M_ID_INFERENCES_HTMLTABLE;
+        $table->attributes['class'] = 'admintable generaltable';
+        $table->data  = $data;
+
+        //return add button and table
+        $heading = $this->output->heading('Inferences',3);
+        return   $heading  . $addnewbutton .  \html_writer::table($table);
+
+    }
+
 
     public function quicklink($type, $courseid){
 

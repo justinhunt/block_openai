@@ -48,12 +48,15 @@ class theinferenceform extends \moodleform {
         $mform->addElement('hidden', 'type','inference');
         $mform->setType('type', PARAM_TEXT);
 
+        $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
+
         $mform->addElement('hidden', 'courseid');
         $mform->setType('courseid', PARAM_INT);
 
         $statusready = true;
         $options  = common::fetch_finetunes_list( $statusready);
-        $mform->addElement('select', 'finetune', 'The Finetune', $options);
+        $mform->addElement('select', 'finetuneid', 'The Finetune', $options);
 
         $mform->addElement('text', 'prompt', 'Prompt', array('size'=>70));
         $mform->setType('prompt', PARAM_TEXT);
@@ -61,7 +64,7 @@ class theinferenceform extends \moodleform {
 
         $mform->addElement('text', 'jsonopts', 'JSON opts', array('size'=>70));
         $mform->setType('jsonopts', PARAM_TEXT);
-        $mform->setDefault('jsonopts', '{"max_tokens": 412, "temperature": 0.5, "top_p": 1, "n": 1}');
+        $mform->setDefault('jsonopts', '{"max_tokens": 412, "temperature": 0.1, "top_p": 1, "n": 1}');
 
 
         //add the action buttons

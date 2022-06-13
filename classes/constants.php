@@ -27,7 +27,8 @@ const SETTING_RUN ='run';
 
 const M_TABLE_FILES ='block_openai_file';
 const M_TABLE_FINETUNES = 'block_openai_finetune';
+const M_TABLE_INFERENCES ='block_openai_inferences';
 const M_ID_FINETUNES_HTMLTABLE = 'id_finetunes';
 const M_ID_TRAININGFILES_HTMLTABLE = 'id_trainingfiles';
-
+const M_ID_INFERENCES_HTMLTABLE = 'id_inferences';
 }
