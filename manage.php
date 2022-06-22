@@ -114,6 +114,31 @@ if ($delete && $id) {
             echo $renderer->footer();
             die;
 
+        case 'inference':
+            $inference = $DB->get_record(constants::M_TABLE_INFERENCES,array('id'=>$id));
+            if(!$inference){
+                redirect($returnurl);
+            }
+            if ($confirm and confirm_sesskey()) {
+
+                if($inference) {
+                    $DB->delete_records(constants::M_TABLE_INFERENCES,array('id'=>$id));
+                }
+                redirect($returnurl);
+            }
+            $strheading = "Deleting Inference";
+            $PAGE->navbar->add($strheading);
+            $PAGE->set_title($strheading);
+            $PAGE->set_heading($SITE->fullname);
+            echo $renderer->header();
+            echo $renderer->heading($strheading);
+            $yesurl = new moodle_url($baseurl . '/manage.php', array('id' => $id, 'delete' => 1,'type'=>'inference',
+                'confirm' => 1, 'sesskey' => sesskey(), 'returnurl' => $returnurl->out_as_local_url()));
+            $message = "Really delete Inference '" . $inference->prompt . "' ?";
+            echo $renderer->confirm($message, $yesurl, $returnurl);
+            echo $renderer->footer();
+            die;
+
     }
 
 }
