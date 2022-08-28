@@ -74,7 +74,8 @@ if ($delete && $id) {
         case 'finetune':
             if ($confirm and confirm_sesskey()) {
                 $finetune = $DB->get_record(constants::M_TABLE_FINETUNES,array('id'=>$id));
-                if($finetune && $finetune->status==1) {
+                //if($finetune && $finetune->status==1) {
+                if($finetune && !empty($finetune->ftmodel)) {
                     openai::delete_finetune($finetune->ftmodel);
                     $DB->delete_records(constants::M_TABLE_FINETUNES,array('id'=>$id));
                 }

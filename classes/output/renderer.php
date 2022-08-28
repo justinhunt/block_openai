@@ -145,6 +145,7 @@ class renderer extends \plugin_renderer_base {
         }
 
         $openai_finetunes = false;
+        $openai_finetunes = openai::list_finetunes();
         $data = array();
         foreach($finetunes as $finetune) {
 
@@ -158,6 +159,9 @@ class renderer extends \plugin_renderer_base {
                                 $finetune->ftmodel = $ft->fine_tuned_model;
                                 $finetune->status=1;
                                 $DB->update_record(constants::M_TABLE_FINETUNES,$finetune);
+                            }elseif($ft->status=='failed'){
+                                //if its failed just update the visual as failed
+                                $finetune->status=2;
                             }
                             $status = $finetune->status;
                             break;
@@ -171,7 +175,11 @@ class renderer extends \plugin_renderer_base {
             $fields[] =  $finetune->name;
             $fields[] =  $finetune->openaiid;
             $fields[] = $trainingfiles[$finetune->file];
-            $fields[] = $status ==0 ? 'PENDING' : 'Ready';
+            switch($status) {
+                case 0: $fields[] = 'PENDING'; break;
+                case 1: $fields[] = 'Ready'; break;
+                case 2: $fields[] = 'FAILED'; break;
+            }
             $fields[] = strftime('%d %b %Y', $finetune->timecreated);
 
             $buttons = array();
