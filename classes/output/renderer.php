@@ -290,9 +290,9 @@ class renderer extends \plugin_renderer_base {
         foreach($inferences as $inference) {
             $fields = array();
             $fields[] = $inference->id;
-            $fields[] = $finetunes[$inference->finetuneid];
-            $fields[] = $trainingfiles[$inference->fileid];
-            $fields[] =  shorten_text($inference->prompt,50);
+            $fields[] = shorten_text($finetunes[$inference->finetuneid],50);
+            $fields[] = shorten_text($trainingfiles[$inference->fileid],50);
+            $fields[] =  shorten_text($inference->prompt,80);
             $fields[] = strftime('%d %b %Y', $inference->timemodified);
             $fields[] = strftime('%d %b %Y', $inference->timecreated);
 
