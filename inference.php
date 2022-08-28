@@ -96,8 +96,9 @@ if($ok) {
     }else if($view && $id){
         $inference = $DB->get_record(constants::M_TABLE_INFERENCES,['id'=>$id] );
         $tdata = [];
+        $tdata['prompt'] = $inference->prompt;
         $tdata['response'] = $inference->completion;
-        echo  $renderer->render_from_template('block_openai/completionresponse', $tdata);
+        echo  $renderer->render_from_template('block_openai/viewinferencedetails', $tdata);
 
         echo $renderer->quicklink( constants::SETTING_FINETUNES, $courseid);
 

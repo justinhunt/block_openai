@@ -292,7 +292,7 @@ class renderer extends \plugin_renderer_base {
             $fields[] = $inference->id;
             $fields[] = $finetunes[$inference->finetuneid];
             $fields[] = $trainingfiles[$inference->fileid];
-            $fields[] =  $inference->prompt;
+            $fields[] =  shorten_text($inference->prompt,50);
             $fields[] = strftime('%d %b %Y', $inference->timemodified);
             $fields[] = strftime('%d %b %Y', $inference->timecreated);
 
