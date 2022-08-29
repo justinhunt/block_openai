@@ -145,7 +145,17 @@ class renderer extends \plugin_renderer_base {
         }
 
         $openai_finetunes = false;
+        //For debugging use this to find out why a fine tune is failing. Probably you hit the pay wall
+        /*
         $openai_finetunes = openai::list_finetunes();
+        foreach($openai_finetunes->data as $oaf) {
+            if($oaf->status=='failed'){
+                //set break point here
+                $deets = openai::list_finetunes_details($oaf->id);
+            }
+        }
+        */
+
         $data = array();
         foreach($finetunes as $finetune) {
 

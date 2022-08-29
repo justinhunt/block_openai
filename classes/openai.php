@@ -111,6 +111,12 @@ class openai {
         return $response;
     }
 
+    public static  function list_finetunes_details($finetuneid){
+        $requrl =  self::OPENAISYS .  "/fine-tunes/" . $finetuneid;
+        $response = self::curl_fetch($requrl,null, 'get');
+        return $response;
+    }
+
     public static  function create_finetune($trainingfile,$model){
         $requrl =  self::OPENAISYS .  "/fine-tunes";
         $postdata = [
