@@ -39,6 +39,7 @@ require_once($CFG->dirroot.'/lib/formslib.php');
 class theinferenceform extends \moodleform {
 
     public function definition() {
+        global $CFG,$COURSE;
         $mform = $this->_form;
 
         $mform->addElement('header', 'typeheading', "Create Inference");
@@ -56,7 +57,10 @@ class theinferenceform extends \moodleform {
 
         $statusready = true;
         $options  = common::fetch_finetunes_list( $statusready);
-        $mform->addElement('select', 'finetuneid', 'The Finetune', $options);
+        //$mform->addElement('select', 'finetuneid', 'The Finetune', $options);
+        $mform->addElement('selectwithlink', 'finetuneid', 'The Finetune', $options,
+            array('link' => $CFG->wwwroot.'/blocks/openai/inference.php?courseid='.$COURSE->id, 'label' => 'go')
+        );
 
         $mform->addElement('text', 'prompt', 'Prompt', array('size'=>70));
         $mform->setType('prompt', PARAM_TEXT);

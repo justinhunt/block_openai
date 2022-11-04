@@ -68,44 +68,55 @@ if($ok) {
         $options = [];
         $finetune = $DB->get_record(constants::M_TABLE_FINETUNES, array('id' => $data->finetuneid));
         $trainingfile = $DB->get_record(constants::M_TABLE_FILES, array('id' => $finetune->file));
-        $options['prompt'] = $data->prompt . $trainingfile->seperator;
-        $options['model'] = $finetune->ftmodel;
-        $options['stop'] = $trainingfile->stopsequence;
-        if (common::is_json($data->jsonopts)) {
-            $options = $options + json_decode($data->jsonopts, true);
-        }
-        $response = openai::custom_request($options);
-
-        //save a copy of this inference
-        if (!empty($response)) {
-            if (isset($response->error)) {
-                echo $response->error->message;
-            } else {
-                $rec = new \stdClass();
-                $rec->prompt = $data->prompt;
-                $rec->completion = $response;
-                $rec->finetuneid = $finetune->id;
-                $rec->fileid = $trainingfile->id;
-                $rec->jsonopts = $data->jsonopts;
-                $rec->timecreated = time();
-                $rec->timemodified = time();
-                $rec->id = $DB->insert_record(constants::M_TABLE_INFERENCES, $rec);
+        if(!empty($data->prompt)) {
+            $options['prompt'] = $data->prompt . $trainingfile->seperator;
+            $options['model'] = $finetune->ftmodel;
+            $options['stop'] = $trainingfile->stopsequence;
+            if (common::is_json($data->jsonopts)) {
+                $options = $options + json_decode($data->jsonopts, true);
             }
-        }
+            $response = openai::custom_request($options);
 
-    }else if($view && $id){
-        $inference = $DB->get_record(constants::M_TABLE_INFERENCES,['id'=>$id] );
+            //save a copy of this inference
+            if (!empty($response)) {
+                if (isset($response->error)) {
+                    echo $response->error->message;
+                } else {
+                    $rec = new \stdClass();
+                    $rec->prompt = $data->prompt;
+                    $rec->completion = $response;
+                    $rec->finetuneid = $finetune->id;
+                    $rec->fileid = $trainingfile->id;
+                    $rec->jsonopts = $data->jsonopts;
+                    $rec->timecreated = time();
+                    $rec->timemodified = time();
+                    $rec->id = $DB->insert_record(constants::M_TABLE_INFERENCES, $rec);
+                }
+            }//if not empty response
+        }//if not empty data promot
+
+    }else if($view && $id) {
+        $inference = $DB->get_record(constants::M_TABLE_INFERENCES, ['id' => $id]);
         $tdata = [];
         $tdata['prompt'] = $inference->prompt;
         $tdata['response'] = $inference->completion;
-        echo  $renderer->render_from_template('block_openai/viewinferencedetails', $tdata);
+        echo $renderer->render_from_template('block_openai/viewinferencedetails', $tdata);
 
-        echo $renderer->quicklink( constants::SETTING_FINETUNES, $courseid);
+        echo $renderer->quicklink(constants::SETTING_FINETUNES, $courseid);
 
         echo $renderer->footer();
-    }else{
-        $inferenceform->set_data(['courseid'=>$courseid]);
+        return;
     }
+
+
+  //display the form
+    $usedata= ['courseid'=>$courseid];
+    if(isset($trainingfile) && !empty($trainingfile->exampleprompt) ){
+        $usedata['prompt']=$trainingfile->exampleprompt;
+    }
+
+    $inferenceform->set_data($usedata);
+
 
     $inferenceform->display();
     if(!empty($response)){
