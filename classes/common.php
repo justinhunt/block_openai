@@ -137,6 +137,20 @@ class common
         return $ret;
     }
 
+
+    public static function fetch_exampleprompts_list(){
+        $trainingfiles  = self::fetch_trainingfiles();
+        $finetunes  = self::fetch_finetunes();
+        $ret =[];
+        foreach($finetunes as $ft){
+            $tf = $trainingfiles[$ft->file];
+            if($tf) {
+                $ret[$ft->id] =$tf->id;// $tf->exampleprompt;
+            }
+        }
+        return $ret;
+    }
+
     public static function fetch_finetunes_list($statusready=false){
         global $DB;
         $params = array();

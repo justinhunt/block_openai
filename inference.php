@@ -93,7 +93,7 @@ if($ok) {
                     $rec->id = $DB->insert_record(constants::M_TABLE_INFERENCES, $rec);
                 }
             }//if not empty response
-        }//if not empty data promot
+        }//if not empty data prompt
 
     }else if($view && $id) {
         $inference = $DB->get_record(constants::M_TABLE_INFERENCES, ['id' => $id]);
@@ -111,10 +111,6 @@ if($ok) {
 
   //display the form
     $usedata= ['courseid'=>$courseid];
-    if(isset($trainingfile) && !empty($trainingfile->exampleprompt) ){
-        $usedata['prompt']=$trainingfile->exampleprompt;
-    }
-
     $inferenceform->set_data($usedata);
 
 

@@ -37,14 +37,26 @@ require_once($CFG->dirroot.'/lib/formslib.php');
 
 
 class theinferenceform extends \moodleform {
+    protected $trainingfiles = array();
 
     public function definition() {
         global $CFG,$COURSE;
         $mform = $this->_form;
 
+        $exampleprompts  = common::fetch_exampleprompts_list();
+        $json_prompts = json_encode($exampleprompts);
+        $js = "<script>";
+        $js .= "function pokePrompt(){";
+        $js .= "var prompts=" . $json_prompts . ";";
+        $js.= "var ftid_field=document.getElementById('id_finetuneid');";
+        $js.= "var prompt_field=document.getElementById('id_prompt');";
+        $js.= "prompt_field.innerHTML=prompts[ftid_field.value];";
+        $js .= "};";
+        $js .="</script>";
+        $js.="<a href='javascript: pokePrompt();'>Set default prompt for finetune</a><br><br>";
+
+
         $mform->addElement('header', 'typeheading', "Create Inference");
-
-
 
         $mform->addElement('hidden', 'type','inference');
         $mform->setType('type', PARAM_TEXT);
@@ -57,12 +69,11 @@ class theinferenceform extends \moodleform {
 
         $statusready = true;
         $options  = common::fetch_finetunes_list( $statusready);
-        //$mform->addElement('select', 'finetuneid', 'The Finetune', $options);
-        $mform->addElement('selectwithlink', 'finetuneid', 'The Finetune', $options,
-            array('link' => $CFG->wwwroot.'/blocks/openai/inference.php?courseid='.$COURSE->id, 'label' => 'go')
-        );
+        $mform->addElement('select', 'finetuneid', 'The Finetune', $options);
 
-        $mform->addElement('text', 'prompt', 'Prompt', array('size'=>70));
+        $mform->addElement('html',$js);
+
+        $mform->addElement('textarea', 'prompt', 'Prompt', array('wrap'=>'virtual','style'=>'width: 100%;'));
         $mform->setType('prompt', PARAM_TEXT);
         $mform->setDefault('prompt', 'non fiction reading passage: blah blah blah');
 
