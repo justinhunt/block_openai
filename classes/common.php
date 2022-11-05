@@ -145,7 +145,11 @@ class common
         foreach($finetunes as $ft){
             $tf = $trainingfiles[$ft->file];
             if($tf) {
-                $ret[$ft->id] =$tf->id;// $tf->exampleprompt;
+                if(!empty($tf->exampleprompt)) {
+                    $ret[$ft->id] = $tf->exampleprompt;
+                }else{
+                    $ret[$ft->id] = '-- prompt goes here --';
+                }
             }
         }
         return $ret;
