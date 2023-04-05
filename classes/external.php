@@ -6,32 +6,32 @@ use block_openai\common;
 
 class block_openai_external extends external_api {
 
-    //------------ DELETE ITEM ---------------//
-    public static function update_sub_parameters() {
+    //------------ fetch completion---------------//
+    public static function fetch_completion_parameters() {
         return new external_function_parameters(
                 array(
-                        'schoolname' => new external_value(PARAM_TEXT, 'The course name'),
-                        'upstreamuser' => new external_value(PARAM_TEXT, 'The upstreamuser'),
-                        'upstreamsub' => new external_value(PARAM_TEXT, 'The upstreamsub'),
-                        'upstreamplan' => new external_value(PARAM_TEXT, 'The upstreamplan'),
-                        'expiretime' => new external_value(PARAM_INT, 'The expire time'),
+                        'completiontask' => new external_value(PARAM_TEXT, 'The course name'),
+                        'taskparam1' => new external_value(PARAM_TEXT, 'Task Param 1'),
+                        'taskparam2' => new external_value(PARAM_TEXT, 'Task Param 2'),
+                        'taskparam3' => new external_value(PARAM_TEXT, 'Task Param 3'),
+                        'taskparam4' => new external_value(PARAM_TEXT, 'Task Param 4')
                 )
         );
     }
 
-    public static function update_sub($schoolname,$upstreamuser, $upstreamsub,$upstreamplan,$expiretime)
+    public static function fetch_completion($completiontask,$taskparam1, $taskparam2,$taskparam3,$taskparam4)
     {
         global $CFG, $DB, $USER;
 
         $errormessage="";
 
         // We always must pass webservice params through validate_parameters.
-        $params = self::validate_parameters(self::update_sub_parameters(),
-                ['schoolname' => $schoolname,
-                    'upstreamuser' => $upstreamuser,
-                    'upstreamsub' => $upstreamsub,
-                    'upstreamplan' => $upstreamplan,
-                    'expiretime'=>$expiretime
+        $params = self::validate_parameters(self::fetch_completion_parameters(),
+                ['completiontask' => $completiontask,
+                    'taskparam1' => $taskparam1,
+                    'taskparam2' => $taskparam2,
+                    'taskparam3' => $taskparam3,
+                    'taskparam4' => $taskparam4
                 ]);
 
         //Context validation
@@ -44,7 +44,7 @@ class block_openai_external extends external_api {
         if (!has_capability('block/openai:manageservices', $context)) {
             throw new moodle_exception('nopermission');
         }
-
+/*
         //create the course and course category for the sub
         $results=false;
         $plan=common::fetch_plan_by_upstreamid($upstreamplan);
@@ -91,9 +91,10 @@ class block_openai_external extends external_api {
         $ret->message='Unable to create site:' . $errormessage;
         $ret->error=true;
         return json_encode($ret);
+*/
     }
 
-    public static function update_sub_returns() {
+    public static function fetch_completion_returns() {
         return new external_value(PARAM_RAW);
         //return new external_value(PARAM_INT, 'group id');
     }
