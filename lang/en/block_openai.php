@@ -30,8 +30,8 @@ $string['headerconfig'] = 'Config section header';
 $string['labelfoo'] = 'Config label';
 $string['openai:addinstance'] = 'Add a Open AI block';
 $string['openai:myaddinstance'] = 'Add Open AI block to my moodle';
-$string['openai:managesite'] = 'Manage poodll net site';
-$string['openai:manageservices'] = 'Manage services';
+$string['openai:managesite'] = 'Manage OpenAI site';
+$string['openai:manageservices'] = 'Manage Open AI services';
 $string['pluginname'] = 'Open AI';
 $string['welcomeuser'] = 'Welcome {$a->firstname} {$a->lastname}';
 $string['something_happened'] = 'Something happened event';
@@ -166,6 +166,3 @@ $string['chargebeesync_task'] = 'Chargebee Sync';
 $string['subdomain']='Sub domain';
 $string['modified']='modified';
 $string['fulldomain']='Full domain';
-
-
-
