@@ -45,6 +45,7 @@ use block_openai\constants;
 class openai {
 
     const OPENAIENGINES = "https://api.openai.com/v1/engines";
+    const OPENAICHAT = "https://api.openai.com/v1/chat/completions";
     const OPENAISYS = "https://api.openai.com/v1";
 
     public static function request_grammar_correction($originaltext){
@@ -148,7 +149,7 @@ class openai {
 
     }
 
-    public static  function request($engine, $prompt, $max_tokens){
+    public static function request($engine, $prompt, $max_tokens){
 
         $postdata = [
             "prompt" => $prompt,
@@ -163,6 +164,28 @@ class openai {
 
         // Send the request & save response to $resp
         $requrl =  self::OPENAIENGINES . "/" . $engine . "/completions";
+
+        $response = self::curl_fetch($requrl,$postdata, 'post');
+        return $response;
+
+    }
+
+    public static function chatrequest($messages,$model="gpt-4"){
+
+        $postdata = [
+            "model" => $model,
+            "messages" => $messages,
+            /*"max_tokens" => $max_tokens,*/
+            "temperature" => 0.7,
+            "top_p" => 1,
+            "presence_penalty" => 0.75,
+            "frequency_penalty"=> 0.75,
+            "n"=> 1,
+            "stream" => false,
+        ];
+
+        // Send the request & save response to $resp
+        $requrl =  self::OPENAICHAT;
 
         $response = self::curl_fetch($requrl,$postdata, 'post');
         return $response;
@@ -282,7 +305,12 @@ class openai {
         if(self::is_json($result)){
             $resultobj = json_decode($result);
             if(isset($resultobj->choices) && count($resultobj->choices)>0){
-                $text= $resultobj->choices[0]->text;
+                //chat returns a different format response in a "message" property
+                if(isset($resultobj->choices[0]->message)){
+                    $text = $resultobj->choices[0]->message->content;
+                }else {
+                    $text = $resultobj->choices[0]->text;
+                }
                 return trim($text);
             }else{
                 return $resultobj;

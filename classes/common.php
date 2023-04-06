@@ -77,6 +77,16 @@ class common
                 return new \moodle_url(constants::M_URL . '/inference.php',
                     array('courseid'=>$courseid));
 
+            case constants::SETTING_ECCOURSE:
+
+                return new \moodle_url(constants::M_URL . '/eccourse.php',
+                    array());
+
+            case constants::SETTING_CHAT:
+
+                return new \moodle_url(constants::M_URL . '/chat.php',
+                    array());
+
             case constants::SETTING_NONE:
             default:
         }
@@ -91,6 +101,12 @@ class common
 
             case constants::SETTING_INFERENCE:
                 return 'Inference';
+
+            case constants::SETTING_ECCOURSE:
+                return 'EC Course';
+
+            case constants::SETTING_CHAT:
+                return 'Chat';
 
             case constants::SETTING_NONE:
             default:

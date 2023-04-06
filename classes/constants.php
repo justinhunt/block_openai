@@ -22,6 +22,8 @@ const M_HOOKCOUNT =5;
 const SETTING_NONE ='none';
 const SETTING_FINETUNES ='finetune';
 const SETTING_INFERENCE ='inference';
+const SETTING_CHAT ='chat';
+const SETTING_ECCOURSE ='eccourse';
 const SETTING_RUN ='run';
 
 

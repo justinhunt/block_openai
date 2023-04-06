@@ -56,19 +56,19 @@ $eccourseform = new \block_openai\local\form\eccourseform();
 $renderer = $PAGE->get_renderer(constants::M_COMP);
 echo $renderer->header();
 echo $renderer->heading($SITE->fullname);
-
+//cache the units array, since its a pain to wait and expensive
+$cache = \cache::make_from_params(\cache_store::MODE_APPLICATION, 'block_openai', 'courseunits');
 
 if($ok) {
 
     if ($eccourseform->is_cancelled() ){
         redirect($CFG->wwwroot . '/blocks/openai/eccourse.php');
     }else if($data = $eccourseform->get_data() ) {
+
         $eccoursehelper=new \block_openai\eccoursehelper();
 
-        //cache the units array, since its a pain to wait and expensive
-        $cache = \cache::make_from_params(\cache_store::MODE_APPLICATION, 'block_openai', 'courseunits');
-        $key = $data->eccourseid;
 
+        $key = $data->eccourseid;
         try {
             $units = $cache->get($key);
         }catch(\Exception $e){
@@ -89,11 +89,41 @@ if($ok) {
 
     }else if($eccourseid>0) {
         $eccoursehelper=new \block_openai\eccoursehelper();
-        $units = $eccoursehelper->parse_into_units_from_api($eccourseid);
+
+        //fetch units
+        $key = $data->eccourseid;
+        try {
+            $units = $cache->get($key);
+        }catch(\Exception $e){
+            $units =false;
+        }
+        if(!$units) {
+            $units = $eccoursehelper->parse_into_units_from_api($key);
+            $cache->set($key,$units);
+        }
+
+
         $ecunitsform = new \block_openai\local\form\ecunitsform(null,array('units'=>$units));
+
         if($ecunitsform->is_cancelled() ){
             redirect($CFG->wwwroot . '/blocks/openai/eccourse.php');
-        }else{
+
+        }elseif($formdata =$ecunitsform->get_data()){
+
+            //TO DO - extend parse_into_units_from_api to save the course name and deets as well, so we can get that here
+            $fullname="testcourse";
+            $shortname="testcourse shortname";
+            $idnumber=$eccourseid;
+            $category="1";
+            $ret = $eccoursehelper->create_empty_moodle_course($fullname, $shortname, $idnumber, $category) ;
+            if(!$ret['success']) {
+                echo $ret['message'];
+                echo $renderer->footer();
+                return;
+            }
+
+            $eccoursehelper->process_all_api($units,$formdata, $ret['id']);
+
             //process submission
             $data = $ecunitsform->get_data();
             print_r($data);

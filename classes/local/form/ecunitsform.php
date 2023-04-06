@@ -82,11 +82,11 @@ class ecunitsform extends \moodleform {
             $mform->addGroup($dquestionarray, 'dquestions_' . $unitindex, '', array(' '), false);
 
             //unit model answer and keywords
-            $mform->addElement('textarea', "solomodelanswer[$unitindex]", 'Solo Model Answer', array('wrap'=>'virtual','style'=>'width: 100%;'));
-            $mform->setType("solomodelanswer[$unitindex]", PARAM_TEXT);
+            $mform->addElement('textarea', "solomodelanswer[$unit->unitid]", 'Solo Model Answer', array('wrap'=>'virtual','style'=>'width: 100%;'));
+            $mform->setType("solomodelanswer[$unit->unitid]", PARAM_TEXT);
 
-            $mform->addElement('textarea', "solokeywords[$unitindex]", 'Solo Keywords', array('wrap'=>'virtual','style'=>'width: 100%;'));
-            $mform->setType("solokeywords[$unitindex]", PARAM_TEXT);
+            $mform->addElement('textarea', "solokeywords[$unit->unitid]", 'Solo Keywords', array('wrap'=>'virtual','style'=>'width: 100%;'));
+            $mform->setType("solokeywords[$unit->unitid]", PARAM_TEXT);
 
         }
 

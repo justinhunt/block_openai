@@ -6,7 +6,7 @@ class eccoursehelper
 {
 
 
-function process_all_api($eccourseid, $moodlecourseid)
+function process_all_api($units,$formdata, $moodlecourseid)
 {
     global $DB, $CFG;
 
@@ -17,9 +17,31 @@ function process_all_api($eccourseid, $moodlecourseid)
     require_once($CFG->libdir . '/plagiarismlib.php');
     require_once($CFG->dirroot . '/course/modlib.php');
 
-
     $moodlecourse = $DB->get_record('course', array('id' => $moodlecourseid));
-    $units =  $this->parse_into_units_from_api($eccourseid);
+
+    //purge from $units, what is not in formdata
+    foreach($units as $ukey=>$unit){
+        if(!in_array($unit->unitid,$formdata->unitid)){
+            unset($units[$ukey]);
+            continue;
+        }
+        foreach($unit->videos as $vkey=>$video){
+            if(!in_array($video->videoid,$formdata->videoid)){
+                unset($unit->videos[$vkey]);
+                continue;
+            }
+            foreach($video->dquestions as $dkey=>$dquestion){
+                if(!in_array($dquestion->dquestionid,$formdata->dquestionid)){
+                    unset($video->dquestions[$dkey]);
+                    continue;
+                }
+            }
+        }
+        //add here the form data model answer and keywords
+        $unit->solomodelanswer = $formdata->solomodelanswer[$unit->unitid];
+        $unit->solokeywords = $formdata->solokeywords[$unit->unitid];
+    }
+
     ////now all the data is nicely in the units array, and we can create units in the course
     //  var_dump($units);
     // print_r($units);
@@ -64,7 +86,7 @@ function create_moodle_unit($unit, $course)
     //Solo
     $formdata = ['name' => 'Speaking Time ', 'modulename' => 'solo', 'course' => $course->id, 'add' => 'solo', 'sr' => 0];
     $activitydata = $formdata;
-    $extradata = $dquestions;
+    $extradata = [$dquestions, $unit->solomodelanswer,$unit->solokeywords];
     $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
 
     //Page
@@ -213,16 +235,20 @@ function setupMinilesson($activitydata, $fromform)
     return $fromform;
 }
 
-function setupSolo($activitydata, $fromform, $dquestions)
+function setupSolo($activitydata, $fromform, $extradata)
 {
     $englishvoices = ["Matthew", "Joey", "Joanna", "Olivia"];
+    list($dquestions, $solomodelanswer,$solokeywords) = $extradata;
     $fromform->convlength = 1;
     $fromform->activitysteps = \mod_solo\constants::M_SEQ_PRM;
     $fromform->relevancegrade = \mod_solo\constants::RELEVANCE_QUITE;
     $fromform->suggestionsgrade = \mod_solo\constants::SUGGEST_GRADE_USE;
     $fromform->speakingtopic = implode(PHP_EOL, $dquestions);
+    $fromform->modeltts = $solomodelanswer;
+    $fromform->targetwords = $solokeywords;
     $fromform->modelttsvoice = $englishvoices[array_rand($englishvoices)];
     $fromform->topicttsvoice = $englishvoices[array_rand($englishvoices)];
+
     echo 'modelttsvoice: ' . $fromform->modelttsvoice;
     echo 'topicttsvoice: ' . $fromform->topicttsvoice;
     return $fromform;
@@ -497,6 +523,63 @@ function notifyUser($message)
 {
     echo $message . PHP_EOL;
 }
+
+
+    /**
+     * creates an empty Moodle course
+     *
+     */
+ function create_empty_moodle_course($fullname, $shortname, $idnumber, $category) {
+        global $CFG, $DB;
+
+            require_once("$CFG->dirroot/course/lib.php");
+            $ret=['success'=>false,'message'=>'','id'=>0];
+
+            $courseconfig = get_config('moodlecourse');
+            $template = new \stdClass();
+            $template->summary        = '';
+            $template->summaryformat  = FORMAT_HTML;
+            $template->format         = $courseconfig->format;
+            $template->numsections    = 0;//$courseconfig->numsections;
+            $template->newsitems      = 0;//$courseconfig->newsitems;
+            $template->showgrades     = $courseconfig->showgrades;
+            $template->showreports    = $courseconfig->showreports;
+            $template->maxbytes       = $courseconfig->maxbytes;
+            $template->groupmode      = $courseconfig->groupmode;
+            $template->groupmodeforce = $courseconfig->groupmodeforce;
+            $template->visible        = $courseconfig->visible;
+            $template->lang           = $courseconfig->lang;
+            $template->enablecompletion = $courseconfig->enablecompletion;
+            $template->groupmodeforce = $courseconfig->groupmodeforce;
+            $template->startdate      = usergetmidnight(time());
+            if ($courseconfig->courseenddateenabled) {
+                $template->enddate    = usergetmidnight(time()) + $courseconfig->courseduration;
+            }
+
+            $newcourse = clone($template);
+            $newcourse->fullname  = $fullname;
+            $newcourse->shortname = $shortname;
+            $newcourse->idnumber  = $idnumber;
+            $newcourse->category  = $category;
+
+            // Detect duplicate data once again, above we can not find duplicates
+            // in external data using DB collation rules...
+            if ($DB->record_exists('course', array('shortname' => $newcourse->shortname))) {
+                $ret['message']="can not insert new course, duplicate shortname detected: ".$newcourse->shortname;
+                return $ret;
+
+            } else if (!empty($newcourse->idnumber) and $DB->record_exists('course', array('idnumber' => $newcourse->idnumber))) {
+                $ret['message']="can not insert new course, duplicate idnumber detected: ".$newcourse->idnumber;
+                return $ret;
+            }
+            $c = create_course($newcourse);
+            $ret['message']="created course: $c->id, $c->fullname, $c->shortname, $c->idnumber, $c->category";
+            $ret['success']=true;
+            $ret["id"]=$c->id;
+            return $ret;
+
+    }
+
 
 /*
  * This will produce an array of units, each with (i)an array of videos (each containing cquestion and dquestion arrays)

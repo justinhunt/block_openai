@@ -37,6 +37,8 @@ class renderer extends \plugin_renderer_base {
 
         $items[]= constants::SETTING_FINETUNES;
         $items[]= constants::SETTING_INFERENCE;
+        $items[]= constants::SETTING_CHAT;
+        $items[]= constants::SETTING_ECCOURSE;
 
         $settings = [];
         foreach ($items as $item){
@@ -352,6 +354,12 @@ class renderer extends \plugin_renderer_base {
 
     }
 
+    public function display_chat_output($chatresponse){
+
+        $heading = $this->output->heading('Chat Response',3);
+        $body = \html_writer::div($chatresponse,'block_openai_chat_response');
+        return $heading  . $body;
+    }
 
     public function quicklink($type, $courseid){
 
