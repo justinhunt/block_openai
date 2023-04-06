@@ -70,17 +70,16 @@ if($ok) {
 
         $key = $data->eccourseid;
         try {
-            $units = $cache->get($key);
+            $parsed_course = $cache->get($key);
         }catch(\Exception $e){
-            $units =false;
+            $parsed_course =false;
+        }
+        if(!$parsed_course) {
+            $parsed_course = $eccoursehelper->parse_into_units_from_api($key);
+            $cache->set($key,$parsed_course);
         }
 
-        if(!$units) {
-            $units = $eccoursehelper->parse_into_units_from_api($data->eccourseid);
-            $cache->set($key,$units);
-        }
-
-        $ecunitsform = new \block_openai\local\form\ecunitsform(null,array('units'=>$units));
+        $ecunitsform = new \block_openai\local\form\ecunitsform(null,array('units'=>$parsed_course['units']));
         $usedata= ['eccourseid'=>$data->eccourseid];
         $ecunitsform->set_data($usedata);
         $ecunitsform->display();
@@ -91,28 +90,30 @@ if($ok) {
         $eccoursehelper=new \block_openai\eccoursehelper();
 
         //fetch units
-        $key = $data->eccourseid;
+        $key = $eccourseid;
         try {
-            $units = $cache->get($key);
+            $parsed_course = $cache->get($key);
         }catch(\Exception $e){
-            $units =false;
+            $parsed_course =false;
         }
-        if(!$units) {
-            $units = $eccoursehelper->parse_into_units_from_api($key);
-            $cache->set($key,$units);
+        if(!$parsed_course) {
+            $parsed_course = $eccoursehelper->parse_into_units_from_api($key);
+            $cache->set($key,$parsed_course);
         }
 
 
-        $ecunitsform = new \block_openai\local\form\ecunitsform(null,array('units'=>$units));
+        $ecunitsform = new \block_openai\local\form\ecunitsform(null,array('units'=>$parsed_course['units']));
 
         if($ecunitsform->is_cancelled() ){
             redirect($CFG->wwwroot . '/blocks/openai/eccourse.php');
 
         }elseif($formdata =$ecunitsform->get_data()){
 
+
+
             //TO DO - extend parse_into_units_from_api to save the course name and deets as well, so we can get that here
-            $fullname="testcourse";
-            $shortname="testcourse shortname";
+            $fullname=$parsed_course['name'];
+            $shortname=strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','_',$parsed_course['name']));
             $idnumber=$eccourseid;
             $category="1";
             $ret = $eccoursehelper->create_empty_moodle_course($fullname, $shortname, $idnumber, $category) ;
@@ -122,11 +123,13 @@ if($ok) {
                 return;
             }
 
-            $eccoursehelper->process_all_api($units,$formdata, $ret['id']);
+            $eccoursehelper->process_all_api($parsed_course['units'],$formdata, $ret['id']);
 
-            //process submission
-            $data = $ecunitsform->get_data();
-            print_r($data);
+            echo "<a href='" . $CFG->wwwroot . '/course/view.php?id=' . $ret['id'] . "' class='btn btn-secondary'>Visit New Course: " . $parsed_course['name'] . "</a>";
+
+
+           // $data = $ecunitsform->get_data();
+           // print_r($data);
         }
 
         echo $renderer->footer();

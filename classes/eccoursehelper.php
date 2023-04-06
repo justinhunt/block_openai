@@ -26,16 +26,18 @@ function process_all_api($units,$formdata, $moodlecourseid)
             continue;
         }
         foreach($unit->videos as $vkey=>$video){
+            //before we remove videos extract the discussion question which might be associated with unselected vid
+            foreach($video->dquestions as $dkey=>$dquestion){
+                if(in_array($dquestion->dquestionid,$formdata->dquestionid)){
+                    $unit->solospeakingtopic =$dquestion->questiontext;
+                    break;
+                }
+            }
             if(!in_array($video->videoid,$formdata->videoid)){
                 unset($unit->videos[$vkey]);
                 continue;
             }
-            foreach($video->dquestions as $dkey=>$dquestion){
-                if(!in_array($dquestion->dquestionid,$formdata->dquestionid)){
-                    unset($video->dquestions[$dkey]);
-                    continue;
-                }
-            }
+
         }
         //add here the form data model answer and keywords
         $unit->solomodelanswer = $formdata->solomodelanswer[$unit->unitid];
@@ -59,34 +61,35 @@ function create_moodle_unit($unit, $course)
 
     $coursesection = course_create_section($course, 0);
     course_update_section($course, $coursesection, array('name' => $unit->name));
-    $dquestions = [];
+
 
     //EnglishCentral
+    $currentvideo=0;
     foreach ($unit->videos as $video) {
+        $currentvideo++;
 
+        //the first two videos are EC, unless there are only two videos, in which case the first is EC
+        if ($currentvideo <= 2 && $currentvideo < count($unit->videos)) {
 
-        // The EC Video
-        $formdata = ['name' => $video->topic, 'modulename' => 'englishcentral', 'course' => $course->id, 'add' => 'englishcentral', 'sr' => 0];
-        $activitydata = $formdata;
-        $activitydata['videoid'] = $video->videoid;
-        $this->create_moodle_item($activitydata, $formdata, $course, $coursesection);
+            // The EC Video
+            $formdata = ['name' => $video->topic, 'modulename' => 'englishcentral', 'course' => $course->id, 'add' => 'englishcentral', 'sr' => 0];
+            $activitydata = $formdata;
+            $activitydata['videoid'] = $video->videoid;
+            $this->create_moodle_item($activitydata, $formdata, $course, $coursesection);
+        }else {
 
-        //The MiniLesson
-        //Minilesson
-        $formdata = ['name' => 'MiniLesson: ' . $video->topic, 'modulename' => 'minilesson', 'course' => $course->id, 'add' => 'minilesson', 'sr' => 0];
-        $activitydata = $formdata;
-        $extradata = $video;
-        $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
-
-        //Solo Prep
-        $dquestions = array_merge($dquestions, $video->dquestions);
-
+            //The MiniLesson
+            $formdata = ['name' => 'MiniLesson: ' . $video->topic, 'modulename' => 'minilesson', 'course' => $course->id, 'add' => 'minilesson', 'sr' => 0];
+            $activitydata = $formdata;
+            $extradata = $video;
+            $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
+        }
     }
 
     //Solo
     $formdata = ['name' => 'Speaking Time ', 'modulename' => 'solo', 'course' => $course->id, 'add' => 'solo', 'sr' => 0];
     $activitydata = $formdata;
-    $extradata = [$dquestions, $unit->solomodelanswer,$unit->solokeywords];
+    $extradata = [$unit->solospeakingtopic, $unit->solomodelanswer,$unit->solokeywords];
     $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
 
     //Page
@@ -173,28 +176,28 @@ function create_base_activity($activitydata, $formdata, $course, $section, $extr
 
         switch ($modulename) {
             case 'readaloud':
-                $fromform = setupReadaloud($activitydata, $fromform);
+                $fromform = $this->setupReadaloud($activitydata, $fromform);
                 break;
             case 'minilesson':
-                $fromform = setupMinilesson($activitydata, $fromform);
+                $fromform = $this->setupMinilesson($activitydata, $fromform);
                 break;
             case 'wordcards':
-                $fromform = setupWordcards($activitydata, $fromform);
+                $fromform = $this->setupWordcards($activitydata, $fromform);
                 break;
             case 'solo':
-                $fromform = setupSolo($activitydata, $fromform, $extradata);
+                $fromform = $this->setupSolo($activitydata, $fromform, $extradata);
                 break;
             case 'pchat':
-                $fromform = setupPchat($activitydata, $fromform);
+                $fromform = $this->setupPchat($activitydata, $fromform);
                 break;
             case 'englishcentral':
-                $fromform = setupEnglishCentral($activitydata, $fromform);
+                $fromform = $this->setupEnglishCentral($activitydata, $fromform);
                 break;
             case 'assign':
-                $fromform = setupAssign($activitydata, $fromform);
+                $fromform = $this->setupAssign($activitydata, $fromform);
                 break;
             case 'page':
-                $fromform = setupPage($activitydata, $fromform, $extradata);
+                $fromform = $this->setupPage($activitydata, $fromform, $extradata);
                 break;
         }
         $fromform->section = $section->section;
@@ -238,19 +241,17 @@ function setupMinilesson($activitydata, $fromform)
 function setupSolo($activitydata, $fromform, $extradata)
 {
     $englishvoices = ["Matthew", "Joey", "Joanna", "Olivia"];
-    list($dquestions, $solomodelanswer,$solokeywords) = $extradata;
+    list($solospeakingtopic, $solomodelanswer,$solokeywords) = $extradata;
     $fromform->convlength = 1;
     $fromform->activitysteps = \mod_solo\constants::M_SEQ_PRM;
     $fromform->relevancegrade = \mod_solo\constants::RELEVANCE_QUITE;
     $fromform->suggestionsgrade = \mod_solo\constants::SUGGEST_GRADE_USE;
-    $fromform->speakingtopic = implode(PHP_EOL, $dquestions);
+    $fromform->speakingtopic = $solospeakingtopic;
     $fromform->modeltts = $solomodelanswer;
     $fromform->targetwords = $solokeywords;
     $fromform->modelttsvoice = $englishvoices[array_rand($englishvoices)];
     $fromform->topicttsvoice = $englishvoices[array_rand($englishvoices)];
 
-    echo 'modelttsvoice: ' . $fromform->modelttsvoice;
-    echo 'topicttsvoice: ' . $fromform->topicttsvoice;
     return $fromform;
 }
 
@@ -290,7 +291,6 @@ function extend_base_activity_EnglishCentral($activitydata, $cmid)
 
     list($course, $cm) = get_course_and_cm_from_cmid($cmid, 'englishcentral');
     $ecid = $cm->instance;
-    notifyUser('ECID: ' . $ecid);
     $ret = \mod_englishcentral\utils::add_video($ecid, $activitydata['videoid']);
 
 }
@@ -521,7 +521,7 @@ function create_unitword($unitword)
 
 function notifyUser($message)
 {
-    echo $message . PHP_EOL;
+    echo $message . '<br>';
 }
 
 
@@ -587,15 +587,17 @@ function notifyUser($message)
  *
  *
  */
-function parse_into_units_from_api($courseid)
+function parse_into_units_from_api($ec_courseid)
 {
     $ec = new \stdClass();
     $ec->config = get_config('mod_englishcentral');
 
     $auth = new \mod_englishcentral\auth($ec);
     //$content = $auth->fetch_dialog_content(15495);
-    $cc = $auth->fetch_course_content($courseid);
-    $units = [];
+    $cc = $auth->fetch_course_content($ec_courseid);
+
+    $parsed_course = ['name'=>$cc->name,'id'=>$ec_courseid,'units'=>[]];
+
     foreach ($cc->courseUnits as $ccunit) {
         $currentunit = $this->create_new_unit($ccunit);
 
@@ -628,11 +630,11 @@ function parse_into_units_from_api($courseid)
             }
         }
         if (count($currentunit->videos) > 0) {
-            $units[] = $currentunit;
+            $parsed_course['units'][]= $currentunit;
         }
     }
 
-    return $units;
+    return $parsed_course;
 }
 
 function create_new_video_from_api($dialog)
