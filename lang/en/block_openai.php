@@ -31,6 +31,7 @@ $string['labelfoo'] = 'Config label';
 $string['openai:addinstance'] = 'Add a Open AI block';
 $string['openai:myaddinstance'] = 'Add Open AI block to my moodle';
 $string['openai:managesite'] = 'Manage poodll net site';
+$string['openai:manageservices'] = 'Manage services';
 $string['pluginname'] = 'Open AI';
 $string['welcomeuser'] = 'Welcome {$a->firstname} {$a->lastname}';
 $string['something_happened'] = 'Something happened event';
