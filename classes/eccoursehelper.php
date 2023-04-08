@@ -40,8 +40,9 @@ function process_all_api($units,$formdata, $moodlecourseid)
 
         }
         //add here the form data model answer and keywords
-        $unit->solomodelanswer = $formdata->solomodelanswer[$unit->unitid];
-        $unit->solokeywords = $formdata->solokeywords[$unit->unitid];
+        $unitindex = $formdata->unitindex[$unit->unitid];
+        $unit->solomodelanswer = $formdata->solomodelanswer[$unitindex];
+        $unit->solokeywords = $formdata->solokeywords[$unitindex];
     }
 
     ////now all the data is nicely in the units array, and we can create units in the course

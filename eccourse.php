@@ -54,12 +54,19 @@ $eccourseform = new \block_openai\local\form\eccourseform();
 
 //get our renderer
 $renderer = $PAGE->get_renderer(constants::M_COMP);
-echo $renderer->header();
-echo $renderer->heading($SITE->fullname);
+$PAGE->requires->js_call_amd(constants::M_COMP . "/ajaxhelper", 'init', array());
+
+
 //cache the units array, since its a pain to wait and expensive
 $cache = \cache::make_from_params(\cache_store::MODE_APPLICATION, 'block_openai', 'courseunits');
 
-if($ok) {
+if(!$ok) {
+    echo $renderer->header();
+    echo $renderer->heading($SITE->fullname);
+    echo  get_string('nopermission', constants::M_COMP);
+    echo $renderer->footer();
+    return;
+}
 
     if ($eccourseform->is_cancelled() ){
         redirect($CFG->wwwroot . '/blocks/openai/eccourse.php');
@@ -82,6 +89,9 @@ if($ok) {
         $ecunitsform = new \block_openai\local\form\ecunitsform(null,array('units'=>$parsed_course['units']));
         $usedata= ['eccourseid'=>$data->eccourseid];
         $ecunitsform->set_data($usedata);
+
+        echo $renderer->header();
+        echo $renderer->heading($SITE->fullname);
         $ecunitsform->display();
         echo $renderer->footer();
         return;
@@ -108,8 +118,8 @@ if($ok) {
             redirect($CFG->wwwroot . '/blocks/openai/eccourse.php');
 
         }elseif($formdata =$ecunitsform->get_data()){
-
-
+            echo $renderer->header();
+            echo $renderer->heading($SITE->fullname);
 
             //TO DO - extend parse_into_units_from_api to save the course name and deets as well, so we can get that here
             $fullname=$parsed_course['name'];
@@ -127,30 +137,23 @@ if($ok) {
 
             echo "<a href='" . $CFG->wwwroot . '/course/view.php?id=' . $ret['id'] . "' class='btn btn-secondary'>Visit New Course: " . $parsed_course['name'] . "</a>";
 
-
+            echo $renderer->footer();
+            return;
            // $data = $ecunitsform->get_data();
            // print_r($data);
         }
-
+        echo $renderer->header();
+        echo $renderer->heading($SITE->fullname);
         echo $renderer->footer();
         return;
     }
 
 
-    //display the form
-   // $usedata= ['courseid'=>$courseid];
-   // $eccourseform->set_data($usedata);
+echo $renderer->header();
+echo $renderer->heading($SITE->fullname);
 
-
-    $eccourseform->display();
-
-
-
-
-}else{
-    echo  get_string('nopermission', constants::M_COMP);
-}
-
-//echo $renderer->quicklink( constants::SETTING_FINETUNES, $courseid);
-
+$eccourseform->display();
 echo $renderer->footer();
+
+
+

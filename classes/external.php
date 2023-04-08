@@ -2,7 +2,7 @@
 
 use block_openai\constants;
 use block_openai\common;
-
+use block_openai\openai;
 
 class block_openai_external extends external_api {
 
@@ -23,8 +23,6 @@ class block_openai_external extends external_api {
     {
         global $CFG, $DB, $USER;
 
-        $errormessage="";
-
         // We always must pass webservice params through validate_parameters.
         $params = self::validate_parameters(self::fetch_completion_parameters(),
                 ['completiontask' => $completiontask,
@@ -44,59 +42,22 @@ class block_openai_external extends external_api {
         if (!has_capability('block/openai:manageservices', $context)) {
             throw new moodle_exception('nopermission');
         }
-/*
-        //create the course and course category for the sub
-        $results=false;
-        $plan=common::fetch_plan_by_upstreamid($upstreamplan);
-        if($plan) {
-            //existingsub ?
-            if($sub=common::fetch_sub_by_upstreamsubid($upstreamsub)){
-                $results = common::update_client_site($sub,$schoolname,$plan,$expiretime);
-                if ($results) {
-                    //we return details for consistency sake, though they do not change
-                    $obj = json_decode($sub->jsonfields());
-                    if(isset($obj->ldetails)){
-                        $details = json_encode($obj->details) ;
-                        $ret = new \stdClass();
-                        $ret->details = $details;
-                        $ret->message = '';
-                        $ret->error = false;
-                        return json_encode($ret);
-                    }
-                }else{
-                    $errormessage="unable to update client site for school:" . $schoolname;
-                }//end of if results
-            }else {
-                $results = common::create_client_site($plan, $schoolname,$expiretime);
-                if ($results) {
-                    //if we have a category and course then we create an entry in our subs table
-                    //this is so we can list, edit etc in response to ui and api requests
-                    $subscription = common::create_sub($plan, $schoolname, $upstreamuser, $upstreamsub, json_encode($results), $expiretime);
-                    $ret = new \stdClass();
-                    $ret->details = $results;
-                    $ret->message = '';
-                    $ret->error = false;
-                    return json_encode($ret);
-                }else{
-                    $errormessage="unable to create site for school:" . $schoolname;
-                }//end if if results
-            }//end of existingsub?
-        }else{
-            $errormessage="The submitted upstream plan id is unknown:" . $upstreamplan;
-        }//end of if plan
+        $systemrole = new \stdClass();
+        $systemrole->role="system";
+        $systemrole->content=$taskparam1;
 
-        //if we get here, our mission failed, and lets report that
-        $ret = new \stdClass();
-        $ret->details=false;
-        $ret->message='Unable to create site:' . $errormessage;
-        $ret->error=true;
-        return json_encode($ret);
-*/
+        $userrole =new \stdClass();
+        $userrole->role="user";
+        $userrole->content = "Answer the following question in 5 to 7 sentences of easy English: " . trim($taskparam2);
+        $messages=[];
+        $messages[]=$systemrole;
+        $messages[]=$userrole;
+        $chatresponse = openai::chatrequest($messages);
+        return $chatresponse;
     }
 
     public static function fetch_completion_returns() {
-        return new external_value(PARAM_RAW);
-        //return new external_value(PARAM_INT, 'group id');
+        return new external_value(PARAM_TEXT);
     }
 
 

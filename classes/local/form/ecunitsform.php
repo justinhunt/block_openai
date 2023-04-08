@@ -53,6 +53,10 @@ class ecunitsform extends \moodleform {
             $mform->addElement('advcheckbox', "unitid[$unitindex]", null, strtoupper($unit->name), array(), array(0, $unit->unitid));
             $mform->setType("unitid[$unitindex]", PARAM_INT);
             $mform->setDefault("unitid[$unitindex]", $unit->unitid);
+            //hidden unitindex
+            $mform->addElement('hidden', "unitindex[$unit->unitid]" );
+            $mform->setDefault("unitindex[$unit->unitid]",$unitindex);
+            $mform->setType("unitindex[$unit->unitid]",PARAM_INT);
 
             //unit videos
             $mform->addElement('static', "unitvideos","Unit Videos","");
@@ -81,14 +85,17 @@ class ecunitsform extends \moodleform {
             $mform->setDefault("dquestionid[$unitindex]", $dquestion->dquestionid);
             $mform->addGroup($dquestionarray, 'dquestions_' . $unitindex, '', array(' '), false);
 
-            //unit model answer and keywords
-            $mform->addElement('textarea', "solomodelanswer[$unit->unitid]", 'Solo Model Answer', array('wrap'=>'virtual','style'=>'width: 100%;'));
-            $mform->setType("solomodelanswer[$unit->unitid]", PARAM_TEXT);
-            $mform->setDefault("solomodelanswer[$unit->unitid]", 'How are you?');
-
-            $mform->addElement('textarea', "solokeywords[$unit->unitid]", 'Solo Keywords', array('wrap'=>'virtual','style'=>'width: 100%;'));
-            $mform->setType("solokeywords[$unit->unitid]", PARAM_TEXT);
-            $mform->setDefault("solokeywords[$unit->unitid]", 'akeyword');
+            //unit solo model answer
+            $mform->addElement('textarea', "solomodelanswer[$unitindex]", 'Solo Model Answer', array('wrap'=>'virtual','style'=>'width: 100%;'));
+            $mform->setType("solomodelanswer[$unitindex]", PARAM_TEXT);
+            $mform->setDefault("solomodelanswer[$unitindex]", 'How are you?');
+            $prompts = ["You are a 25 year old male from Australia.","You are a 25 year old female from Japan."];
+            $mform->addElement('select', "prompts[$unitindex]","Prompts",$prompts,null,array());
+            $mform->addElement('button',"somebutton[$unitindex]","Do",array('class'=>'writemodelanswer','data-unitindex'=>$unitindex));
+            $mform->addElement('textarea', "solokeywords[$unitindex]", 'Solo Keywords', array('wrap'=>'virtual','style'=>'width: 100%;'));
+            //unit solo keywords
+            $mform->setType("solokeywords[$unitindex]", PARAM_TEXT);
+            $mform->setDefault("solokeywords[$unitindex]", 'akeyword');
 
         }
 
