@@ -224,6 +224,9 @@ function setupEnglishCentral($activitydata, $fromform)
     $fromform->learngoal = $videocount * 5;
     $fromform->speakgoal = $videocount * 5;
     $fromform->studygoal = $videocount * 10;
+    $fromform->completiongoals = 1;
+    $fromform->completion= COMPLETION_TRACKING_AUTOMATIC;
+    $fromform->completionusegrade =null;
     return $fromform;
 }
 
@@ -236,6 +239,9 @@ function setupWordcards($activitydata, $fromform)
 function setupMinilesson($activitydata, $fromform)
 {
     $fromform->transcriber = \mod_minilesson\constants::TRANSCRIBER_POODLL;
+    $fromform->completiongoals = 1;
+    $fromform->completion= COMPLETION_TRACKING_AUTOMATIC;
+    $fromform->completionusegrade =1;
     return $fromform;
 }
 
@@ -252,6 +258,9 @@ function setupSolo($activitydata, $fromform, $extradata)
     $fromform->targetwords = $solokeywords;
     $fromform->modelttsvoice = $englishvoices[array_rand($englishvoices)];
     $fromform->topicttsvoice = $englishvoices[array_rand($englishvoices)];
+    $fromform->completiongoals = 1;
+    $fromform->completion= COMPLETION_TRACKING_AUTOMATIC;
+    $fromform->completionusegrade =1;
 
     return $fromform;
 }
@@ -278,6 +287,7 @@ function setupPage($activitydata, $fromform, $unitvideos)
     $fromform->printintro = false;
     $fromform->printheading = '';
     $fromform->printlastmodified = false;
+    $fromform->completion= false;
     return $fromform;
 }
 
@@ -626,7 +636,7 @@ function parse_into_units_from_api($ec_courseid)
                     $currentunit->videos[] = $vid;
                 } else {
                     echo "no activity tests: " . $dialog->dialogID . PHP_EOL;
-                    print_r($dialog);
+                   // print_r($dialog);
                 }
             }
         }
