@@ -549,7 +549,7 @@ function notifyUser($message)
      * creates an empty Moodle course
      *
      */
- function create_empty_moodle_course($fullname, $shortname, $idnumber, $category) {
+ function create_empty_moodle_course($fullname, $shortname, $idnumber, $category, $coursedetails) {
         global $CFG, $DB;
 
             require_once("$CFG->dirroot/course/lib.php");
@@ -570,7 +570,6 @@ function notifyUser($message)
             $template->visible        = $courseconfig->visible;
             $template->lang           = $courseconfig->lang;
             $template->enablecompletion = $courseconfig->enablecompletion;
-            $template->groupmodeforce = $courseconfig->groupmodeforce;
             $template->startdate      = usergetmidnight(time());
             if ($courseconfig->courseenddateenabled) {
                 $template->enddate    = usergetmidnight(time()) + $courseconfig->courseduration;
@@ -581,6 +580,15 @@ function notifyUser($message)
             $newcourse->shortname = $shortname;
             $newcourse->idnumber  = $idnumber;
             $newcourse->category  = $category;
+
+            //remove some junk from the description
+     $coursedetails->description = str_replace('Course topics include:','',$coursedetails->description);
+            $coursedetails->description = str_replace('The topics are:','',$coursedetails->description);
+            $coursedetails->description = str_replace('It contains the following units:','',$coursedetails->description);
+            //set the description
+            $newcourse->summary   = $coursedetails->description .
+                '<br>Difficulty: ' . $coursedetails->difficultydescription .
+                ' (' . $coursedetails->difficulty . ')' ;
 
             // Detect duplicate data once again, above we can not find duplicates
             // in external data using DB collation rules...
@@ -593,6 +601,16 @@ function notifyUser($message)
                 return $ret;
             }
             $c = create_course($newcourse);
+
+            //add topic tags to course
+            if(!empty($coursedetails->keyTopics)) {
+                \core_tag_tag::set_item_tags('core', 'course', $c->id, \context_course::instance($c->id),
+                    explode(';', $coursedetails->keyTopics));
+            }
+            //add difficulty tags to course
+            \core_tag_tag::set_item_tags('core', 'course', $c->id, \context_course::instance($c->id),
+            [$coursedetails->difficultydescription]);
+
             $ret['message']="created course: $c->id, $c->fullname, $c->shortname, $c->idnumber, $c->category";
             $ret['success']=true;
             $ret["id"]=$c->id;
@@ -617,6 +635,15 @@ function parse_into_units_from_api($ec_courseid)
     $cc = $auth->fetch_course_content($ec_courseid);
 
     $parsed_course = ['name'=>$cc->name,'id'=>$ec_courseid,'units'=>[]];
+
+    //save course details
+    $coursedetails=new \stdClass();
+    $coursedetails->description=$cc->description;
+    $coursedetails->difficulty=$cc->difficulty;
+    $coursedetails->difficultydescription=$cc->difficultyLevelDescription;
+    $coursedetails->keyTopics=$cc->keyTopics;
+    $coursedetails->bannerURL=$cc->bannerURL;
+    $parsed_course['details']=$coursedetails;
 
     foreach ($cc->courseUnits as $ccunit) {
         $currentunit = $this->create_new_unit($ccunit);

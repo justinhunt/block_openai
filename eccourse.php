@@ -126,7 +126,8 @@ if(!$ok) {
             $shortname=strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','_',$parsed_course['name']));
             $idnumber=$eccourseid;
             $category="1";
-            $ret = $eccoursehelper->create_empty_moodle_course($fullname, $shortname, $idnumber, $category) ;
+            $coursedetails = $parsed_course['details'];
+            $ret = $eccoursehelper->create_empty_moodle_course($fullname, $shortname, $idnumber, $category, $coursedetails) ;
             if(!$ret['success']) {
                 echo $ret['message'];
                 echo $renderer->footer();
