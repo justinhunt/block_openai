@@ -43,6 +43,9 @@ function process_all_api($units,$formdata, $moodlecourseid)
         $unitindex = $formdata->unitindex[$unit->unitid];
         $unit->solomodelanswer = $formdata->solomodelanswer[$unitindex];
         $unit->solokeywords = $formdata->solokeywords[$unitindex];
+        $unit->modelttsvoice = $formdata->prompts[$unitindex];
+        $template = '<img src="https://poodllcommedia.s3.ap-northeast-1.amazonaws.com/img/@@name@@.jpg" width="80%>';
+        $unit->modeliframe = str_replace('@@name@@',$unit->modelttsvoice,$template);
     }
 
     ////now all the data is nicely in the units array, and we can create units in the course
@@ -50,18 +53,21 @@ function process_all_api($units,$formdata, $moodlecourseid)
     // print_r($units);
     //  die;
 
+    $unitnumber=0;
     foreach ($units as $unit) {
-        $this->create_moodle_unit($unit, $moodlecourse);
+        $unitnumber++;
+        $this->create_moodle_unit($unit, $moodlecourse,$unitnumber);
     }
 }
 
 
 
-function create_moodle_unit($unit, $course)
+function create_moodle_unit($unit, $course, $unitnumber)
 {
 
     $coursesection = course_create_section($course, 0);
-    course_update_section($course, $coursesection, array('name' => $unit->name));
+    $unitname = "Unit " . $unitnumber . ' - ' . $unit->name;
+    course_update_section($course, $coursesection, array('name' => $unitname));
 
 
     //EnglishCentral
@@ -90,7 +96,7 @@ function create_moodle_unit($unit, $course)
     //Solo
     $formdata = ['name' => 'Speaking Time ', 'modulename' => 'solo', 'course' => $course->id, 'add' => 'solo', 'sr' => 0];
     $activitydata = $formdata;
-    $extradata = [$unit->solospeakingtopic, $unit->solomodelanswer,$unit->solokeywords];
+    $extradata = [$unit->solospeakingtopic, $unit->solomodelanswer,$unit->solokeywords, $unit->modelttsvoice,$unit->modeliframe];
     $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
 
     //Page
@@ -248,7 +254,7 @@ function setupMinilesson($activitydata, $fromform)
 function setupSolo($activitydata, $fromform, $extradata)
 {
     $englishvoices = ["Matthew", "Joey", "Joanna", "Olivia"];
-    list($solospeakingtopic, $solomodelanswer,$solokeywords) = $extradata;
+    list($solospeakingtopic, $solomodelanswer,$solokeywords,$modelttsvoice, $modeliframe) = $extradata;
     $fromform->convlength = 1;
     $fromform->activitysteps = \mod_solo\constants::M_SEQ_PRM;
     $fromform->relevancegrade = \mod_solo\constants::RELEVANCE_QUITE;
@@ -256,7 +262,9 @@ function setupSolo($activitydata, $fromform, $extradata)
     $fromform->speakingtopic = $solospeakingtopic;
     $fromform->modeltts = $solomodelanswer;
     $fromform->targetwords = $solokeywords;
-    $fromform->modelttsvoice = $englishvoices[array_rand($englishvoices)];
+    $fromform->modelttsvoice = $modelttsvoice;
+    $fromform->modeliframe = $modeliframe;
+    $fromform->multiattempts=1;
     $fromform->topicttsvoice = $englishvoices[array_rand($englishvoices)];
     $fromform->completiongoals = 1;
     $fromform->completion= COMPLETION_TRACKING_AUTOMATIC;
@@ -455,6 +463,7 @@ function extend_base_activity_Minilesson($activity, $cmid, $video, $section)
                 $theitemrecord->itemtts = $q->qtext;
                 $theitemrecord->itemttsvoice = $englishvoices[array_rand($englishvoices)];
                 $theitemrecord->itemttsautoplay = 1;
+                $theitemrecord->correctanswer = $q->correct ? $q->correct : 1;
                 $theitemrecord->{\mod_minilesson\constants::POLLYVOICE} = $englishvoices[array_rand($englishvoices)];
                 //show dots or text
                 if ($unittype == 2) {
@@ -629,7 +638,9 @@ function parse_into_units_from_api($ec_courseid)
                                 break;
                             case 55: //discussion
                                 foreach ($activityTest->questions as $question) {
-                                    $vid->dquestions[] =  $this->create_dquestion_from_api($question);
+                                    if(strpos($question->questionText, 'Please explain what this video')===false) {
+                                        $vid->dquestions[] = $this->create_dquestion_from_api($question);
+                                    }
                                 }
                         }
                     }
