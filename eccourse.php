@@ -51,6 +51,8 @@ $ok = has_capability('block/openai:managesite', $context);
 
 $eccourseform = new \block_openai\local\form\eccourseform();
 
+$eclistingform = new \block_openai\local\form\eclistingform();
+
 
 //get our renderer
 $renderer = $PAGE->get_renderer(constants::M_COMP);
@@ -67,27 +69,26 @@ if(!$ok) {
     echo $renderer->footer();
     return;
 }
+    //get our course helper
+    $eccoursehelper=new \block_openai\eccoursehelper();
 
-    if ($eccourseform->is_cancelled() ){
+    if ($eccourseform->is_cancelled() ||$eclistingform->is_cancelled()  ){
         redirect($CFG->wwwroot . '/blocks/openai/eccourse.php');
     }else if($data = $eccourseform->get_data() ) {
-
-        $eccoursehelper=new \block_openai\eccoursehelper();
-
 
         $key = $data->eccourseid;
         try {
             $parsed_course = $cache->get($key);
-        }catch(\Exception $e){
-            $parsed_course =false;
+        } catch (\Exception $e) {
+            $parsed_course = false;
         }
-        if(!$parsed_course) {
+        if (!$parsed_course) {
             $parsed_course = $eccoursehelper->parse_into_units_from_api($key);
-            $cache->set($key,$parsed_course);
+            $cache->set($key, $parsed_course);
         }
 
-        $ecunitsform = new \block_openai\local\form\ecunitsform(null,array('units'=>$parsed_course['units']));
-        $usedata= ['eccourseid'=>$data->eccourseid];
+        $ecunitsform = new \block_openai\local\form\ecunitsform(null, array('units' => $parsed_course['units']));
+        $usedata = ['eccourseid' => $data->eccourseid];
         $ecunitsform->set_data($usedata);
 
         echo $renderer->header();
@@ -96,8 +97,47 @@ if(!$ok) {
         echo $renderer->footer();
         return;
 
+    }else if($data=$eclistingform->get_data()){
+        $groups = ['1'=>'Travel','2'=>'Media','3'=>'Business','4'=>'Academic','5'=>'Social','6'=>'Kids','7'=>'Vocabulary','8'=>'Pronunciation'];
+        $eccourses = $eccoursehelper->get_course_list($data->group,$data->difficulty);
+        echo $renderer->header();
+        echo $renderer->heading($SITE->fullname);
+        echo $renderer->heading('EC Course Form', 3);
+        $eccourseform->display();
+        echo $renderer->heading('List EC Courses Form', 3);
+        $eclistingform->display();
+
+        //set up our table and head attributes
+        $tableattributes = array('class' => 'generaltable ' . constants::M_CLASS . '_table');
+        $htmltable = new \html_table();
+        $tableid = \html_writer::random_id('eccourse');
+        $htmltable->id = $tableid;
+        $htmltable->attributes = $tableattributes;
+
+        $headcells=[];
+        $head=['name','description','action'];
+        foreach ($head as $headcell) {
+            $headcells[] = new \html_table_cell($headcell);
+        }
+        $htmltable->head = $head;
+
+        foreach ($eccourses as $eccourse) {
+            $htr = new \html_table_row();
+            $label = $eccourse->name . ' (Difficulty: ' . $eccourse->difficulty . ')';
+            $htr->cells[] = new \html_table_cell($label);
+            $htr->cells[] = new \html_table_cell($eccourse->description);
+            $htr->cells[] = new \html_table_cell(\html_writer::link($CFG->wwwroot . '/blocks/openai/eccourse.php?eccourseid='.$eccourse->courseID,'create(' .$eccourse->courseID . ')'));
+            $htmltable->data[] = $htr;
+        }
+        $html = $renderer->heading($groups[$data->group], 4);
+        $html .= \html_writer::table($htmltable);
+        echo $html;
+        echo $renderer->footer();
+        return;
+
+
     }else if($eccourseid>0) {
-        $eccoursehelper=new \block_openai\eccoursehelper();
+
 
         //fetch units
         $key = $eccourseid;
@@ -125,7 +165,9 @@ if(!$ok) {
             $fullname=$parsed_course['name'];
             $shortname=strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','_',$parsed_course['name']));
             $idnumber=$eccourseid;
-            $category="1";
+
+            $category=$formdata->category;
+
             $coursedetails = $parsed_course['details'];
             //the original one is too small, we take a guess here
             //$coursedetails->bannerURL2=$parsed_course['units'][0]->videos[0]->demopic;
@@ -145,6 +187,18 @@ if(!$ok) {
             return;
            // $data = $ecunitsform->get_data();
            // print_r($data);
+
+        //we got here not from a form submission but from a link click on listings output
+        }else{
+            $ecunitsform = new \block_openai\local\form\ecunitsform(null, array('units' => $parsed_course['units']));
+            $usedata = ['eccourseid' => $eccourseid];
+            $ecunitsform->set_data($usedata);
+
+            echo $renderer->header();
+            echo $renderer->heading($SITE->fullname);
+            $ecunitsform->display();
+            echo $renderer->footer();
+            return;
         }
         echo $renderer->header();
         echo $renderer->heading($SITE->fullname);
@@ -155,8 +209,10 @@ if(!$ok) {
 
 echo $renderer->header();
 echo $renderer->heading($SITE->fullname);
-
+echo $renderer->heading('EC Course Form', 3);
 $eccourseform->display();
+echo $renderer->heading('List EC Courses Form', 3);
+$eclistingform->display();
 echo $renderer->footer();
 
 

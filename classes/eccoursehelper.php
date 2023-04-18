@@ -659,6 +659,32 @@ function notifyUser($message)
 
     }
 
+    /*
+     * This will fetch all the courses of a group (to a point)
+     */
+    function get_course_list($groupid,$difficulty){
+        $ec = new \stdClass();
+        $ec->config = get_config('mod_englishcentral');
+
+        $auth = new \mod_englishcentral\auth($ec);
+        //$content = $auth->fetch_dialog_content(15495);
+        switch($difficulty){
+            case 'all':
+                $d='1,2,3,4,5,6,7';
+                break;
+            case 'beginner':
+                $d='1,2';
+                break;
+            case 'intermediate':
+                $d='3,4';
+                break;
+            case 'advanced':
+                $d='5,6,7';
+                break;
+        }
+        $courselist = $auth->fetch_course_list($groupid,$d);
+        return $courselist;
+    }
 
 /*
  * This will produce an array of units, each with (i)an array of videos (each containing cquestion and dquestion arrays)

@@ -46,6 +46,39 @@ class ecunitsform extends \moodleform {
         $unitindex=0;
         $videoindex=0;
         $dquestionindex=0;
+
+
+        // add course categories.
+        $displaylist = \core_course_category::make_categories_list(\core_course\management\helper::get_course_copy_capabilities());
+        $mform->addElement('autocomplete', 'category', get_string('coursecategory'), $displaylist);
+        $mform->addRule('category', null, 'required', null, 'client');
+        $mform->addHelpButton('category', 'coursecategory');
+
+        //add activity checkboxes
+        $items=['add_ec_videos','add_minilessons','add_solos','add_notes'];
+        foreach($items as $item) {
+            $mform->addElement('advcheckbox',$item, null, ucwords(str_replace('_',' ',$item)), array(), array(0, true));
+            $mform->setType($item, PARAM_BOOL);
+            $mform->setDefault($item, true);
+        }
+
+        //add course images
+        $demopics=[];
+        foreach ($this->units as $unit) {
+            foreach ($unit->videos as $video) {
+                $demopics[]=['url'=>$video->demopic,
+                    'html'=>\html_writer::tag('img', '', array('src' => $video->demopic,'width'=>150))];
+            }
+        }
+        $bannerurlarray = array();
+        for ($i = 0; $i < count($demopics); $i++) {
+            $bannerurlarray[] =& $mform->createElement('radio', 'bannerurl', '', $demopics[$i]['html'], $demopics[$i]['url']);
+        }
+        $mform->addGroup($bannerurlarray, 'bannerurl', "Course Banner Image", array(' '), FALSE);
+
+        $mform->addElement('hidden', 'eccourseid');
+        $mform->setType('eccourseid', PARAM_INT);
+
         foreach ($this->units as $unit){
             //unit
             $mform->addElement('static', "unit","Unit","---------------------------------------------------------");
@@ -105,30 +138,7 @@ class ecunitsform extends \moodleform {
 
         }
 
-        //add activity checkboxes
-        $items=['add_ec_videos','add_minilessons','add_solos','add_notes'];
-        foreach($items as $item) {
-            $mform->addElement('advcheckbox',$item, null, ucwords(str_replace('_',' ',$item)), array(), array(0, true));
-            $mform->setType($item, PARAM_BOOL);
-            $mform->setDefault($item, true);
-        }
 
-        //add course images
-        $demopics=[];
-        foreach ($this->units as $unit) {
-            foreach ($unit->videos as $video) {
-                $demopics[]=['url'=>$video->demopic,
-                    'html'=>\html_writer::tag('img', '', array('src' => $video->demopic,'width'=>150))];
-            }
-        }
-        $bannerurlarray = array();
-        for ($i = 0; $i < count($demopics); $i++) {
-            $bannerurlarray[] =& $mform->createElement('radio', 'bannerurl', '', $demopics[$i]['html'], $demopics[$i]['url']);
-        }
-        $mform->addGroup($bannerurlarray, 'bannerurl', "Course Banner Image", array(' '), FALSE);
-
-        $mform->addElement('hidden', 'eccourseid');
-        $mform->setType('eccourseid', PARAM_INT);
 
 
         //add the action buttons
