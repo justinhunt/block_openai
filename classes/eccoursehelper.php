@@ -53,16 +53,24 @@ function process_all_api($units,$formdata, $moodlecourseid)
     // print_r($units);
     //  die;
 
+
+    //depending on the form we can create or not create item types
+    $formitems=['add_ec_videos','add_minilessons','add_solos','add_notes'];
+    $ecvideo=$formdata->add_ec_videos;
+    $minilesson=$formdata->add_minilessons;
+    $solo=$formdata->add_solos;
+    $note=$formdata->add_notes;
+
     $unitnumber=0;
     foreach ($units as $unit) {
         $unitnumber++;
-        $this->create_moodle_unit($unit, $moodlecourse,$unitnumber);
+        $this->create_moodle_unit($unit, $moodlecourse,$unitnumber, $ecvideo,$minilesson,$solo,$note);
     }
 }
 
 
 
-function create_moodle_unit($unit, $course, $unitnumber)
+function create_moodle_unit($unit, $course, $unitnumber,$ecvideo,$minilesson,$solo,$note)
 {
 
     $coursesection = course_create_section($course, 0);
@@ -76,7 +84,7 @@ function create_moodle_unit($unit, $course, $unitnumber)
         $currentvideo++;
 
         //the first two videos are EC, unless there are only two videos, in which case the first is EC
-        if ($currentvideo <= 2 && $currentvideo < count($unit->videos)) {
+        if ($currentvideo <= 2 && $currentvideo < count($unit->videos) && $ecvideo) {
 
             // The EC Video
             $formdata = ['name' => $video->topic, 'modulename' => 'englishcentral', 'course' => $course->id, 'add' => 'englishcentral', 'sr' => 0];
@@ -86,24 +94,30 @@ function create_moodle_unit($unit, $course, $unitnumber)
         }else {
 
             //The MiniLesson
-            $formdata = ['name' => 'MiniLesson: ' . $video->topic, 'modulename' => 'minilesson', 'course' => $course->id, 'add' => 'minilesson', 'sr' => 0];
-            $activitydata = $formdata;
-            $extradata = $video;
-            $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
+            if($minilesson) {
+                $formdata = ['name' => 'MiniLesson: ' . $video->topic, 'modulename' => 'minilesson', 'course' => $course->id, 'add' => 'minilesson', 'sr' => 0];
+                $activitydata = $formdata;
+                $extradata = $video;
+                $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
+            }
         }
     }
 
     //Solo
-    $formdata = ['name' => 'Speaking Time ', 'modulename' => 'solo', 'course' => $course->id, 'add' => 'solo', 'sr' => 0];
-    $activitydata = $formdata;
-    $extradata = [$unit->solospeakingtopic, $unit->solomodelanswer,$unit->solokeywords, $unit->modelttsvoice,$unit->modeliframe];
-    $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
+    if($solo) {
+        $formdata = ['name' => 'Speaking Time ', 'modulename' => 'solo', 'course' => $course->id, 'add' => 'solo', 'sr' => 0];
+        $activitydata = $formdata;
+        $extradata = [$unit->solospeakingtopic, $unit->solomodelanswer, $unit->solokeywords, $unit->modelttsvoice, $unit->modeliframe];
+        $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
+    }
 
     //Page
-    $formdata = ['name' => 'Notes: ' . $unit->name, 'modulename' => 'page', 'course' => $course->id, 'add' => 'page', 'sr' => 0];
-    $activitydata = $formdata;
-    $extradata = $unit->videos;
-    $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
+    if($note) {
+        $formdata = ['name' => 'Notes: ' . $unit->name, 'modulename' => 'page', 'course' => $course->id, 'add' => 'page', 'sr' => 0];
+        $activitydata = $formdata;
+        $extradata = $unit->videos;
+        $this->create_moodle_item($activitydata, $formdata, $course, $coursesection, $extradata);
+    }
 
     return;
 /*
@@ -287,8 +301,8 @@ function setupPage($activitydata, $fromform, $unitvideos)
 {
     //$fromform->page['text']=json_encode($unitvideos,JSON_PRETTY_PRINT);
     foreach ($unitvideos as $unitvideo) {
-        $unitvideo->transcript = nl2br($unitvideo->transcript);
-        $unitvideo->transcript = str_replace('\n', ' ', $unitvideo->transcript);
+        unset($unitvideo->transcript);
+        unset($unitvideo->cquestions);
     }
     $fromform->content = json_encode($unitvideos, JSON_PRETTY_PRINT);
     $fromform->display = false;
@@ -582,7 +596,7 @@ function notifyUser($message)
             $newcourse->category  = $category;
 
             //remove some junk from the description
-     $coursedetails->description = str_replace('Course topics include:','',$coursedetails->description);
+            $coursedetails->description = str_replace('Course topics include:','',$coursedetails->description);
             $coursedetails->description = str_replace('The topics are:','',$coursedetails->description);
             $coursedetails->description = str_replace('It contains the following units:','',$coursedetails->description);
             //set the description
@@ -601,6 +615,33 @@ function notifyUser($message)
                 return $ret;
             }
             $c = create_course($newcourse);
+
+            //get course context
+             $coursecontext =\context_course::instance($c->id);
+
+             //add course image to course
+             $filerecord = array(
+                 'contextid' => $coursecontext->id,
+                 'component' => 'course',
+                 'filearea' => 'overviewfiles',
+                 'itemid' => 0,
+                 'filepath' => '/'
+             );
+
+             $urlparams = array(
+                 'calctimeout' => false,
+                 'timeout' => 5,
+                 'skipcertverify' => true,
+                 'connecttimeout' => 5
+             );
+
+             try {
+                 $fs = get_file_storage();
+                 $fs->create_file_from_url($filerecord, $coursedetails->bannerURL2,$urlparams);
+             } catch (\file_exception $e) {
+                 throw new \moodle_exception(get_string($e->errorcode, $e->module, $e->a));
+             }
+
 
             //add topic tags to course
             if(!empty($coursedetails->keyTopics)) {
@@ -641,7 +682,11 @@ function parse_into_units_from_api($ec_courseid)
     $coursedetails->description=$cc->description;
     $coursedetails->difficulty=$cc->difficulty;
     $coursedetails->difficultydescription=$cc->difficultyLevelDescription;
-    $coursedetails->keyTopics=$cc->keyTopics;
+    if(isset($cc->keyTopics)) {
+        $coursedetails->keyTopics = $cc->keyTopics;
+    }else{
+        $coursedetails->keyTopics="";
+    }
     $coursedetails->bannerURL=$cc->bannerURL;
     $parsed_course['details']=$coursedetails;
 
@@ -694,6 +739,11 @@ function create_new_video_from_api($dialog)
     $currentvideo->videourl = $dialog->mediumVideoURL;
     $currentvideo->detailsurl = $dialog->videoDetailsURL;
     $currentvideo->demopic = $dialog->demoPictureURL;
+    if(isset($dialog->keywords)) {
+        $currentvideo->keywords = $dialog->keywords;
+    }else{
+        $currentvideo->keywords ="";
+    }
     $currentvideo->transcript = "";
     $currentvideo->cquestions = [];
     $currentvideo->dquestions = [];

@@ -127,6 +127,9 @@ if(!$ok) {
             $idnumber=$eccourseid;
             $category="1";
             $coursedetails = $parsed_course['details'];
+            //the original one is too small, we take a guess here
+            //$coursedetails->bannerURL2=$parsed_course['units'][0]->videos[0]->demopic;
+            $coursedetails->bannerURL2=$formdata->bannerurl;
             $ret = $eccoursehelper->create_empty_moodle_course($fullname, $shortname, $idnumber, $category, $coursedetails) ;
             if(!$ret['success']) {
                 echo $ret['message'];
