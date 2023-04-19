@@ -53,44 +53,56 @@ function process_all_api($units,$formdata, $moodlecourseid)
     // print_r($units);
     //  die;
 
-
-    //depending on the form we can create or not create item types
-    $formitems=['add_ec_videos','add_minilessons','add_solos','add_notes'];
-    $ecvideo=$formdata->add_ec_videos;
-    $minilesson=$formdata->add_minilessons;
-    $solo=$formdata->add_solos;
-    $note=$formdata->add_notes;
-
     $unitnumber=0;
     foreach ($units as $unit) {
         $unitnumber++;
-        $this->create_moodle_unit($unit, $moodlecourse,$unitnumber, $ecvideo,$minilesson,$solo,$note);
+        $this->create_moodle_unit($unit, $moodlecourse,$unitnumber, $formdata);
     }
 }
 
 
 
-function create_moodle_unit($unit, $course, $unitnumber,$ecvideo,$minilesson,$solo,$note)
+function create_moodle_unit($unit, $course, $unitnumber,$originalformdata)
 {
 
     $coursesection = course_create_section($course, 0);
     $unitname = "Unit " . $unitnumber . ' - ' . $unit->name;
     course_update_section($course, $coursesection, array('name' => $unitname));
 
+    //depending on the form we can create or not create item types
+    $ecvideo=$originalformdata->add_ec_videos;
+    $minilesson=$originalformdata->add_minilessons;
+    $solo=$originalformdata->add_solos;
+    $note=$originalformdata->add_notes;
+
 
     //EnglishCentral
+    $videos_per_activity=$originalformdata->videosperec;
+    $videoids=[];
     $currentvideo=0;
     foreach ($unit->videos as $video) {
         $currentvideo++;
 
-        //the first two videos are EC, unless there are only two videos, in which case the first is EC
-        if ($currentvideo <= 2 && $currentvideo < count($unit->videos) && $ecvideo) {
 
-            // The EC Video
-            $formdata = ['name' => $video->topic, 'modulename' => 'englishcentral', 'course' => $course->id, 'add' => 'englishcentral', 'sr' => 0];
-            $activitydata = $formdata;
-            $activitydata['videoid'] = $video->videoid;
-            $this->create_moodle_item($activitydata, $formdata, $course, $coursesection);
+        //the first two videos are EC, unless there are only two videos, in which case the first is EC
+        //OR
+        //there is no minilesson and only EC
+        if (($currentvideo <= 2 && $currentvideo < count($unit->videos) && $ecvideo)
+        || ($ecvideo && ! $minilesson))
+        {
+            $videoids[]=$video->videoid;
+            //if we have reached the video count per EC, or its the last video create the activity
+            if(count($videoids)==$videos_per_activity || $currentvideo==count($unit->videos)) {
+                // The EC Video
+                $activityname = count($videoids) > 1 ? $unit->name: $video->topic;
+                $formdata = ['name' => $activityname, 'modulename' => 'englishcentral', 'course' => $course->id, 'add' => 'englishcentral', 'sr' => 0];
+                $activitydata = $formdata;
+
+                $activitydata['videoids'] = $videoids;
+                $this->create_moodle_item($activitydata, $formdata, $course, $coursesection);
+                //reset videos array
+                $videoids=[];
+            }
         }else {
 
             //The MiniLesson
@@ -237,9 +249,8 @@ function setupReadaloud($activitydata, $fromform)
 
 function setupEnglishCentral($activitydata, $fromform)
 {
-    //we will only do one video per ec activity
-    //$videocount = count(explode('|', $activity[$pmap['videoids']]));
-    $videocount = 1;
+
+    $videocount = count($activitydata['videoids']);
     $fromform->watchgoal = $videocount;
     $fromform->learngoal = $videocount * 5;
     $fromform->speakgoal = $videocount * 5;
@@ -324,7 +335,9 @@ function extend_base_activity_EnglishCentral($activitydata, $cmid)
 
     list($course, $cm) = get_course_and_cm_from_cmid($cmid, 'englishcentral');
     $ecid = $cm->instance;
-    $ret = \mod_englishcentral\utils::add_video($ecid, $activitydata['videoid']);
+    foreach($activitydata['videoids'] as $videoid) {
+         \mod_englishcentral\utils::add_video($ecid, $videoid);
+    }
 
 }
 
