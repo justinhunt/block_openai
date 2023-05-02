@@ -648,11 +648,13 @@ function notifyUser($message)
                  'connecttimeout' => 5
              );
 
-             try {
-                 $fs = get_file_storage();
-                 $fs->create_file_from_url($filerecord, $coursedetails->bannerURL2,$urlparams);
-             } catch (\file_exception $e) {
-                 throw new \moodle_exception(get_string($e->errorcode, $e->module, $e->a));
+             if(isset($coursedetails->bannerURL2) && !empty($coursedetails->bannerURL2)) {
+                 try {
+                     $fs = get_file_storage();
+                     $fs->create_file_from_url($filerecord, $coursedetails->bannerURL2, $urlparams);
+                 } catch (\file_exception $e) {
+                     throw new \moodle_exception(get_string($e->errorcode, $e->module, $e->a));
+                 }
              }
 
 
@@ -730,16 +732,26 @@ function parse_into_units_from_api($ec_courseid)
     $parsed_course['details']=$coursedetails;
 
     foreach ($cc->courseUnits as $ccunit) {
+        //what kind of unit doesn't have a name?
+        //lets just give it the course name
+        if(!isset($ccunit->name)){
+            $ccunit->name = $cc->name;
+        }
         $currentunit = $this->create_new_unit($ccunit);
 
         foreach ($ccunit->activities as $ccact) {
             //is this a video for us
-            //[activityTypeID] => 9 ??
-            if (isset($ccact->dialogID) && $ccact->activityTypeID==11) {
+            //[activityTypeID] => 9  = pronunciation
+
+            //can do activityTypes
+            $canActivityTypes =[9,11];
+            if (isset($ccact->dialogID) && in_array($ccact->activityTypeID,$canActivityTypes)) {
                 $dialog = $auth->fetch_dialog_content($ccact->dialogID);
 
-                $vid =  $this->create_new_video_from_api($dialog);
                 if (isset($dialog->activityTests)) {
+
+                    $vid = $this->create_new_video_from_api($dialog);
+
                     foreach ($dialog->activityTests as $activityTest) {
                         switch ($activityTest->activityTypeID) {
                             case 24: //comprehension
@@ -757,7 +769,7 @@ function parse_into_units_from_api($ec_courseid)
                     }
                     $currentunit->videos[] = $vid;
                 } else {
-                    echo "no activity tests: " . $dialog->dialogID . PHP_EOL;
+                    echo "no activity tests and we need them: " . $dialog->dialogID . PHP_EOL;
                    // print_r($dialog);
                 }
             }

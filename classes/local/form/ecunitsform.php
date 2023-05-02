@@ -83,6 +83,7 @@ class ecunitsform extends \moodleform {
 
         $mform->addElement('hidden', 'eccourseid');
         $mform->setType('eccourseid', PARAM_INT);
+        $mform->setDefault('bannerurl', $demopics[0]['url']);
 
         foreach ($this->units as $unit){
             //unit
