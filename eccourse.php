@@ -47,6 +47,7 @@ $PAGE->navbar->add(get_string('pluginname', constants::M_COMP));
 
 
 $ok = has_capability('block/openai:managesite', $context);
+$cacheresults=false;
 
 
 $eccourseform = new \block_openai\local\form\eccourseform();
@@ -82,7 +83,7 @@ if(!$ok) {
         } catch (\Exception $e) {
             $parsed_course = false;
         }
-        if (!$parsed_course) {
+        if (!$cacheresults || !$parsed_course) {
             $parsed_course = $eccoursehelper->parse_into_units_from_api($key);
             $cache->set($key, $parsed_course);
         }
@@ -146,7 +147,7 @@ if(!$ok) {
         }catch(\Exception $e){
             $parsed_course =false;
         }
-        if(!$parsed_course) {
+        if(!$cacheresults || !$parsed_course) {
             $parsed_course = $eccoursehelper->parse_into_units_from_api($key);
             $cache->set($key,$parsed_course);
         }
