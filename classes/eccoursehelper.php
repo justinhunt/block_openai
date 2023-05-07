@@ -738,8 +738,6 @@ function parse_into_units_from_api($ec_courseid)
             $ccunit->name = $cc->name;
         }
 
-        error_log($cc);
-
         $currentunit = $this->create_new_unit($ccunit);
 
         foreach ($ccunit->activities as $ccact) {
