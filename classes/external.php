@@ -1,5 +1,8 @@
 <?php
 
+global $CFG;
+require_once($CFG->libdir . '/externallib.php');
+
 use block_openai\constants;
 use block_openai\common;
 use block_openai\openai;
