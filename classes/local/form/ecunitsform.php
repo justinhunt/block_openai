@@ -54,6 +54,11 @@ class ecunitsform extends \moodleform {
         $mform->addRule('category', null, 'required', null, 'client');
         $mform->addHelpButton('category', 'coursecategory');
 
+        //EC Videos per Unit
+        //unit solo model answer
+        $prompts = ["1"=>"1","2"=>"2","3"=>"3","4"=>"4","5"=>"5","all"=>"all"];
+        $mform->addElement('select', "videosperec","Videos per EC activity",$prompts,null,array());
+
         //add activity checkboxes
         $items=['add_ec_videos','add_minilessons','add_solos','add_notes'];
         foreach($items as $item) {
@@ -78,6 +83,7 @@ class ecunitsform extends \moodleform {
 
         $mform->addElement('hidden', 'eccourseid');
         $mform->setType('eccourseid', PARAM_INT);
+        $mform->setDefault('bannerurl', $demopics[0]['url']);
 
         foreach ($this->units as $unit){
             //unit

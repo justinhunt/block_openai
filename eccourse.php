@@ -47,6 +47,7 @@ $PAGE->navbar->add(get_string('pluginname', constants::M_COMP));
 
 
 $ok = has_capability('block/openai:managesite', $context);
+$cacheresults=false;
 
 
 $eccourseform = new \block_openai\local\form\eccourseform();
@@ -82,7 +83,7 @@ if(!$ok) {
         } catch (\Exception $e) {
             $parsed_course = false;
         }
-        if (!$parsed_course) {
+        if (!$cacheresults || !$parsed_course) {
             $parsed_course = $eccoursehelper->parse_into_units_from_api($key);
             $cache->set($key, $parsed_course);
         }
@@ -146,7 +147,7 @@ if(!$ok) {
         }catch(\Exception $e){
             $parsed_course =false;
         }
-        if(!$parsed_course) {
+        if(!$cacheresults || !$parsed_course) {
             $parsed_course = $eccoursehelper->parse_into_units_from_api($key);
             $cache->set($key,$parsed_course);
         }
@@ -163,13 +164,13 @@ if(!$ok) {
 
             //TO DO - extend parse_into_units_from_api to save the course name and deets as well, so we can get that here
             $fullname=$parsed_course['name'];
-            $shortname=strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','_',$parsed_course['name']));
+            $shortname=strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','_',$parsed_course['name'])) .'_' . $eccourseid;
             $idnumber=$eccourseid;
 
             $category=$formdata->category;
 
             $coursedetails = $parsed_course['details'];
-            //the original one is too small, we take a guess here
+            //the original one is too small, so we choose put it on the form for the user to choose from the video thumbs
             //$coursedetails->bannerURL2=$parsed_course['units'][0]->videos[0]->demopic;
             $coursedetails->bannerURL2=$formdata->bannerurl;
             $ret = $eccoursehelper->create_empty_moodle_course($fullname, $shortname, $idnumber, $category, $coursedetails) ;
