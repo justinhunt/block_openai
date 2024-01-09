@@ -140,7 +140,10 @@ class common
     }
 
     public static function fetch_models_list(){
-        return array('ada'=>'ada','babbage'=>'babbage','curie'=>'curie','davinci'=>'davinci');
+        //The original fine-tune models (gone now -4-01-2024)
+        //return array('ada'=>'ada','babbage'=>'babbage','curie'=>'curie','davinci'=>'davinci');
+        return array('gpt-3.5-turbo-1106'=>'gpt-3.5-turbo-1106','gpt-3.5-turbo-0613'=>'gpt-3.5-turbo-0613','babbage-002'=>'babbage-002','davinci-002'=>'davinci-002','gpt-4-0613'=>'gpt-4-0613');
+
     }
 
     public static function fetch_trainingfiles_list(){

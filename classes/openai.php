@@ -119,7 +119,8 @@ class openai {
     }
 
     public static  function create_finetune($trainingfile,$model){
-        $requrl =  self::OPENAISYS .  "/fine-tunes";
+        $requrl =  self::OPENAISYS .  "/fine_tuning/jobs";
+
         $postdata = [
             "training_file" => $trainingfile,
             "model"=>$model
