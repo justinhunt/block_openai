@@ -160,8 +160,8 @@ class openai {
             $response = self::curl_fetch($requrl,$postdata, 'post');
             return $response;
         }else{
-            unset($options['prompt']);
-            unset($options['best_of']);
+            unset($postdata['prompt']);
+            unset($postdata['best_of']);
             $requrl =  self::OPENAISYS . "/chat/completions";
             $postdata['model']=$options['model'];
             $postdata['messages']=[];
