@@ -154,11 +154,31 @@ class openai {
         ];
         $postdata = array_merge($default,$options);
 
-        // Send the request & save response to $resp
-        $requrl =  self::OPENAISYS . "/completions";
-
-        $response = self::curl_fetch($requrl,$postdata, 'post');
-        return $response;
+        if(strpos($options['model'],'davinci') !== false){
+            // Send the request & save response to $resp
+            $requrl =  self::OPENAISYS . "/completions";
+            $response = self::curl_fetch($requrl,$postdata, 'post');
+            return $response;
+        }else{
+            $requrl =  self::OPENAISYS . "/chat/completions";
+            $req = new \stdClass();
+            $req->model=$options['model'];
+            $req->messages=[];
+            $sysrole=new \stdClass();
+            $userrole=new \stdClass();
+            $sysrole->role="system";
+            $sysrole->content= "You are a helpful assistant.";
+            $userrole->role="user";
+            $userrole->content= $options['prompt'];
+            $req->messages[]=$sysrole;
+            $req->messages[]=$userrole;
+            $postdata = json_encode($req);
+            $response = self::curl_fetch($requrl,$postdata, 'post');
+            if(isset($response->choices[0])){
+                return $response->choices[0]->message;
+            }
+            return $response;
+        }
 
     }
 

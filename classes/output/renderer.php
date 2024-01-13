@@ -115,7 +115,7 @@ class renderer extends \plugin_renderer_base {
         return $thebutton;
     }
 
-    //return a button that will allow user to add a new sub
+    //return a button that will allow user to add a new inference
     function fetch_addinference_button($courseid=0){
         $url =common::fetch_settings_url(constants::SETTING_INFERENCE,$courseid);
         $displayname ="Create Inference";
