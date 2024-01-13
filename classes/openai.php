@@ -160,6 +160,8 @@ class openai {
             $response = self::curl_fetch($requrl,$postdata, 'post');
             return $response;
         }else{
+            unset($options['prompt']);
+            unset($options['best_of']);
             $requrl =  self::OPENAISYS . "/chat/completions";
             $postdata['model']=$options['model'];
             $postdata['messages']=[];
@@ -170,7 +172,7 @@ class openai {
             $userrole->role="user";
             $userrole->content= $options['prompt'];
             $postdata['messages'][]=$sysrole;
-            $postdata['messages'][]=$userrole;;
+            $postdata['messages'][]=$userrole;
             $response = self::curl_fetch($requrl,$postdata, 'post');
             if(isset($response->choices[0])){
                 return $response->choices[0]->message;
