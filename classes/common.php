@@ -116,7 +116,7 @@ class common
 
     public static function fetch_finetunes(){
         global $DB;
-        $openai_finetunes = openai::list_finetunes();
+        $openai_finetunes = openai::list_finetune_jobs();
         $finetunes = $DB->get_records(constants::M_TABLE_FINETUNES,array());
         //TO DO merge and return
         return $finetunes;

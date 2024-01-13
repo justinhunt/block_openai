@@ -106,14 +106,26 @@ class openai {
         return $response;
     }
 
-    public static  function list_finetunes(){
-        $requrl =  self::OPENAISYS .  "/fine-tunes";
+    public static  function list_models(){
+        $requrl =  self::OPENAISYS .  "/models";
         $response = self::curl_fetch($requrl,null, 'get');
         return $response;
     }
 
-    public static  function list_finetunes_details($finetuneid){
-        $requrl =  self::OPENAISYS .  "/fine-tunes/" . $finetuneid;
+    public static  function list_model_details($finetuneid){
+        $requrl =  self::OPENAISYS .  "/models/" . $finetuneid;
+        $response = self::curl_fetch($requrl,null, 'get');
+        return $response;
+    }
+
+    public static  function list_finetune_jobs(){
+        $requrl =  self::OPENAISYS .  "/fine_tuning/jobs";
+        $response = self::curl_fetch($requrl,null, 'get');
+        return $response;
+    }
+
+    public static  function list_finetune_job_details($finetuneid){
+        $requrl =  self::OPENAISYS .  "/fine_tuning/jobs/" . $finetuneid;
         $response = self::curl_fetch($requrl,null, 'get');
         return $response;
     }
