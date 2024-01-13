@@ -161,16 +161,16 @@ class openai {
             return $response;
         }else{
             $requrl =  self::OPENAISYS . "/chat/completions";
-            $postdata->model=$options['model'];
-            $postdata->messages=[];
+            $postdata['model']=$options['model'];
+            $postdata['messages']=[];
             $sysrole=new \stdClass();
             $userrole=new \stdClass();
             $sysrole->role="system";
             $sysrole->content= "You are a helpful assistant.";
             $userrole->role="user";
             $userrole->content= $options['prompt'];
-            $postdata->messages[]=$sysrole;
-            $postdata->messages[]=$userrole;;
+            $postdata['messages'][]=$sysrole;
+            $postdata['messages'][]=$userrole;;
             $response = self::curl_fetch($requrl,$postdata, 'post');
             if(isset($response->choices[0])){
                 return $response->choices[0]->message;
