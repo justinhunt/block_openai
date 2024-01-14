@@ -186,6 +186,7 @@ class renderer extends \plugin_renderer_base {
             $fields[] = $finetune->id;
             $fields[] =  $finetune->name;
             $fields[] =  $finetune->openaiid;
+            $fields[] =   $finetune->ftmodel;
             $fields[] = $trainingfiles[$finetune->file];
             switch($status) {
                 case 0: $fields[] = 'PENDING'; break;
@@ -211,6 +212,7 @@ class renderer extends \plugin_renderer_base {
         $table->head  = array(get_string('id', constants::M_COMP),
             get_string('name', constants::M_COMP),
             'openaiid',
+            'FT Model',
             'Training File',
             'Status',
             get_string('created', constants::M_COMP),
